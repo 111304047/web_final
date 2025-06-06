@@ -1,142 +1,134 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../AuthContext";
+import "./game5.css";
 
 export default function Game5Canvas() {
-  const [success, setSuccess] = useState(false);
+  const [holes, setHoles] = useState(Array(8).fill({ state: "empty", timer: 0 }));
+  const [timer, setTimer] = useState(60);
+  const [goodScore, setGoodScore] = useState(0);
+  const [badScore, setBadScore] = useState(0);
   const [showOverlay, setShowOverlay] = useState(false);
-  const { user, login } = useAuth();
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const hasCleared = localStorage.getItem("game2Success") === "true";
-    if (hasCleared) {
-      setSuccess(false); 
-      setShowOverlay(false);
+    if (timer <= 0) {
+      if (goodScore >= 30) {
+        setSuccess(true);
+      }
+      setShowOverlay(true);
+      return;
     }
+    const countdown = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(countdown);
+  }, [timer]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setHoles((prev) =>
+        prev.map((hole) => {
+          if (hole.state === "raw" && hole.timer >= 5) return { state: "cooked", timer: 0 };
+          if (hole.state === "cooked" && hole.timer >= 2) return { state: "burnt", timer: 0 };
+          if (hole.state === "raw" || hole.state === "cooked") {
+            return { ...hole, timer: hole.timer + 1 };
+          }
+          return hole;
+        })
+      );
+    }, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  // 當過關時呼叫此函式
-  async function handleSuccess() {
-    localStorage.setItem("game2Success", "true");
-    setSuccess(true);
-    setShowOverlay(true);
-    // SCORE +1 並同步到 DB
-    if (user && user.username) {
-      const newScore = (user.score || 0) + 1;
-      try {
-        const res = await fetch("/api/auth", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: user.username, score: newScore }),
-        });
-        if (res.ok) {
-          login({ ...user, score: newScore });
-        } else {
-          console.error("Failed to update score");
-        }
-      } catch (err) {
-        console.error("Error updating score:", err);
+  const handleClick = (index) => {
+    setHoles((prev) => {
+      const hole = prev[index];
+      const newHoles = [...prev];
+      if (hole.state === "empty") {
+        newHoles[index] = { state: "raw", timer: 0 };
+      } else if (hole.state === "cooked") {
+        newHoles[index] = { state: "empty", timer: 0 };
+        setGoodScore((g) => g + 1);
+      } else if (hole.state === "burnt") {
+        newHoles[index] = { state: "empty", timer: 0 };
+        setBadScore((b) => b + 1);
       }
-    }
-  }
+      return newHoles;
+    });
+  };
+
+  const getHoleClass = (state) => `takoyaki-hole ${state}`;
 
   return (
-    <>
-      {/* 這裡放你的遊戲元件或互動內容，預設只留一個模擬過關按鈕 */}
-      <button
-        onClick={handleSuccess}
-        style={{
-          padding: "12px 32px",
-          fontSize: 20,
-          borderRadius: 8,
-          background: "#C5AC6B",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        模擬過關5（請改成你自己的過關條件）
-      </button>
-
-      {/* 成功過關後彈窗 */}
-      {showOverlay && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          background: "rgba(0,0,0,0.25)",
-          zIndex: 99999,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}>
-          <div
-            style={{
-              width: "350px",
-              height: "200px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              padding: "1.5rem",
-              border: "3px solid #C5AC6B",
-              color: "#C5AC6B",
-              background: "#fff",
-              borderRadius: "16px",
-              boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
-            }}
-          >
-            <h2 style={{ color: "#505166", fontSize: 22, fontWeight: 700, marginBottom: 18, textAlign: "center" }}>
-              Success！
-            </h2>
-            <div style={{ display: "flex", gap: 16 }}>
-              <button
-                onClick={() => {
-                  // 重置遊戲狀態
-                  setShowOverlay(false);
-                  setSuccess(false);
-                  localStorage.removeItem("game2Success");
-                  // TODO: 這裡也要重置你自己的遊戲狀態
-                }}
-                style={{
-                  padding: "8px 24px",
-                  color: "#fff",
-                  background: "#E36B5B",
-                  border: "none",
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  fontSize: 16,
-                  cursor: "pointer",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                }}
-              >
-                Again
-              </button>
-              <button
-                onClick={() => {
-                  window.location.href = "/";
-                }}
-                style={{
-                  padding: "8px 24px",
-                  color: "#fff",
-                  background: "#505166",
-                  border: "none",
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  fontSize: 16,
-                  cursor: "pointer",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                }}
-              >
-                Back
-              </button>
+    <div className="game-wrapper">
+      <div className="game-container">
+        {/* Info Panel */}
+        <div className="info-panel">
+          <div className="timer-box">
+            <img src="/images/clock.png" className="timer-img" />
+            <div>{timer}s</div>
+          </div>
+          <div className="score-box">
+            <div className="score good">
+              <img src="/images/good taco.png" className="score-icon" />
+              <div className="score-num">{String(goodScore).padStart(2, "0")}</div>
+            </div>
+            <div className="score bad">
+              <img src="/images/bad taco.png" className="score-icon" />
+              <div className="score-num">{String(badScore).padStart(2, "0")}</div>
             </div>
           </div>
         </div>
-      )}
-    </>
+
+        {/* Grill Panel */}
+        <div className="grill-panel">
+          {holes.map((hole, idx) => (
+            <div
+              key={idx}
+              className={getHoleClass(hole.state)}
+              onClick={() => handleClick(idx)}
+            />
+          ))}
+        </div>
+
+        {/* 成功過關後彈窗 */}
+        {showOverlay && (
+          <div className="overlay">
+            <div className="result-box">
+              <img
+                src={success ? "/images/win.png" : "/images/fail.png"}
+                alt={success ? "挑戰成功" : "挑戰失敗"}
+                className="result-icon"
+              />
+              <h2 className="result-title">
+                {success ? "挑戰成功" : "挑戰失敗"}
+              </h2>
+              <div className="result-buttons">
+                <button
+                  className="btn btn-gold"
+                  onClick={() => (window.location.href = "/")}
+                >
+                  回到首頁
+                </button>
+                <button
+                  className="btn btn-red"
+                  onClick={() => {
+                    setHoles(Array(8).fill({ state: "empty", timer: 0 }));
+                    setGoodScore(0);
+                    setBadScore(0);
+                    setTimer(60);
+                    setShowOverlay(false);
+                    setSuccess(false);
+                  }}
+                >
+                  再玩一次
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
   );
-} 
+}
