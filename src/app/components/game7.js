@@ -42,14 +42,14 @@ export default function Game7Canvas() {
   const [displayScore, setDisplayScore] = useState(0);
   const [canvasSize, setCanvasSize] = useState({ w: 400, h: 400 });
 
-  // 1. 取得可用畫布寬高（與 layout 框一致）
+  // 取得可用畫布寬高
   function getAvailableCanvasSize() {
     const w = Math.max(320, window.innerWidth - 80);
     const h = Math.max(320, window.innerHeight - 164);
     return { w, h };
   }  
 
-  // 2. 響應式監聽
+  // 響應式
   useEffect(() => {
     function handleResize() {
       setCanvasSize(getAvailableCanvasSize());
@@ -82,14 +82,14 @@ export default function Game7Canvas() {
     myShotImg.current = img;
   }, []);
 
-  // 載入 shootBg.png
+  // 載入底圖
   useEffect(() => {
     const img = new window.Image();
     img.src = "/game7/shootBg.png";
     shootBgImg.current = img;
   }, []);
 
-  // 分數變動時，平滑動畫顯示
+  // 加分動畫
   useEffect(() => {
     if (displayScore === score) return;
     let raf;
@@ -105,7 +105,7 @@ export default function Game7Canvas() {
     }
     animateScore();
     return () => raf && cancelAnimationFrame(raf);
-  }, [score]); // 只依賴 score
+  }, [score]); 
 
   // 遊戲畫面
   useEffect(() => {
@@ -137,7 +137,7 @@ export default function Game7Canvas() {
         ctx.drawImage(shootBgImg.current, x, y, shootBgSize, shootBgSize);
       }
 
-      // 比例縮放
+      // 比例
       const scaleW = canvasSize.w / BASE_SIZE;
       const scaleH = canvasSize.h / BASE_SIZE;
 
@@ -197,8 +197,8 @@ export default function Game7Canvas() {
       const maxCircleR = 35;
       const maxFontSize = 30; 
       const circleR = Math.min(18 * scaleW, maxCircleR);
-      const circleX = Math.min(50 * scaleW, 30) + circleR; // 左側固定內距 + 半徑
-      const circleY = Math.min(50 * scaleH, 25) + circleR; // 上側固定內距 + 半徑
+      const circleX = Math.min(50 * scaleW, 30) + circleR; // 左側內距 + 半徑
+      const circleY = Math.min(50 * scaleH, 25) + circleR; // 上側內距 + 半徑
       const fontSize = Math.min(16 * scaleW, maxFontSize);
 
       // 進度條
@@ -209,7 +209,7 @@ export default function Game7Canvas() {
       const barWidth = Math.min(140 * scaleW, maxBarWidth);
       const scoreBarHeight =  Math.min(9 * scaleW, maxBarHeight);
       const maxScore = 100 * MAX_SHOTS;
-      const barY = circleY - scoreBarHeight/2; // 讓進度條垂直置中於圓形
+      const barY = circleY - scoreBarHeight/2; 
       const percent = Math.min(displayScore / maxScore, 1);
 
       // 進度條底
@@ -279,7 +279,7 @@ export default function Game7Canvas() {
           const now = Date.now();
           const flicker = 0.75 + 0.25 * Math.sin(now / 300);
 
-          // 設定最大字體與最大區塊寬高
+          // 最大字體與底色寬高
           const maxTipFontSize = 25;
           const maxTipWidth = 320;  
           const maxTipHeight = 45;  
@@ -316,8 +316,8 @@ export default function Game7Canvas() {
       }
 
       // 畫射擊圖標
-      const shotPadding = 30; // 固定與右、上方的內距
-      const maxShotSize = 55; // 最大像素
+      const shotPadding = 30; // 右、上方的內距
+      const maxShotSize = 55;
       const shotSize = Math.min(28 * scaleW, maxShotSize);
       const shotGap = 3 * scaleW;
       const shotY = shotPadding;
@@ -402,7 +402,6 @@ export default function Game7Canvas() {
     if (stage !== "playing" || shotsLeft <= 0) return;
     if (e.code !== "Space") return;
 
-    // 加入這兩行
     const scaleW = canvasSize.w / BASE_SIZE;
     const scaleH = canvasSize.h / BASE_SIZE;
 
@@ -439,7 +438,7 @@ export default function Game7Canvas() {
           setStage("round");
           setCurrentRound(r => r + 1);
           setShowResultTip("");
-          // 若已射完五次，則進入結算
+          // 若已射擊五次，則進入結算
           if (shotsLeft - 1 <= 0) {
             setStage("result");
           } else {
@@ -514,7 +513,7 @@ export default function Game7Canvas() {
           <ol style={{
             textAlign: "left",  // 文字靠左
             maxWidth: 400,
-            margin: "0 auto",  // 整區塊置中
+            margin: "0 auto",  // 區塊置中
             display: "block",
             padding: 0,
             listStylePosition: "inside"
