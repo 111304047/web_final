@@ -232,18 +232,27 @@ export default function Game4Canvas() {
     if (ref.current) new Game(ref.current, setScore, (r) => setRemaining(r), () => setWin(true), () => setFail(true));
   }, []);
 
-  async function handleAgain() {
+  async function handleAgainWin() {
     setWin(false);
     setScore(0);
     setRemaining(20);
     if (ref.current) {
       ref.current.innerHTML = "";
-      new Game(ref.current, setScore, (r) => setRemaining(r), () => setWin(true));
+      new Game(ref.current, setScore, (r) => setRemaining(r), () => setWin(true), () => setFail(true));
     }
     if (user?.username) {
       const newScore = (user.score || 0) + 1;
       await fetch("/api/auth", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: user.username, score: newScore }) });
       login({ ...user, score: newScore });
+    }
+  }
+  function handleAgainFail() {
+    setFail(false);
+    setScore(0);
+    setRemaining(20);
+    if (ref.current) {
+      ref.current.innerHTML = "";
+      new Game(ref.current, setScore, (r) => setRemaining(r), () => setWin(true), () => setFail(true));
     }
   }
 
@@ -261,6 +270,7 @@ export default function Game4Canvas() {
         </div>
       </div>
       <div className="play-area">
+        
         <div ref={ref} className="ring-container" style={{ position: "relative", width: "100%", height: "100%" }} />
       </div>
       <div className="score-panel">
@@ -268,10 +278,10 @@ export default function Game4Canvas() {
         <div className="remaining-display"><span className="label">剩餘圈數</span><span className="value">{remaining}</span><img src={ringStack.src} className="remaining-icon" alt="remaining" /></div>
       </div>
       {win && (
-        <div className="game-overlay"><div className="game-dialog"><h2>Success！</h2><div className="button-group"><button onClick={handleAgain}>Again</button><button onClick={() => (window.location.href = "/")}>Back</button></div></div></div>
+        <div className="game-overlay"><div className="game-dialog"><h2>Success！</h2><div className="button-group"><button onClick={handleAgainWin}>Again</button><button onClick={() => (window.location.href = "/")}>Back</button></div></div></div>
       )}
       {fail && (
-        <div className="game-overlay"><div className="game-dialog"><h2>Fail！</h2><div className="button-group"><button onClick={handleAgain}>Again</button><button onClick={() => (window.location.href = "/")}>Back</button></div></div></div>
+        <div className="game-overlay"><div className="game-dialog"><h2>Fail！</h2><div className="button-group"><button onClick={handleAgainFail}>Again</button><button onClick={() => (window.location.href = "/")}>Back</button></div></div></div>
       )}
     </div>
   );
