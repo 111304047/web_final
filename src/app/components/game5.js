@@ -1,57 +1,116 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./game5.css";
 
 export default function Game5Canvas() {
   const [holes, setHoles] = useState(Array(8).fill({ state: "empty", timer: 0 }));
   const [timer, setTimer] = useState(60);
+  const [difficultyLevel, setDifficultyLevel] = useState(0);
   const [goodScore, setGoodScore] = useState(0);
   const [badScore, setBadScore] = useState(0);
   const [showOverlay, setShowOverlay] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
+  const popSound = useRef(null);
+  const cookSound = useRef(null);
+  const marqueeRef = useRef(null);
+
+  const messages = [
+    "注意：章魚燒要記得及時起鍋，不然很快就會燒焦囉！",
+    "最頂尖的章魚燒師傅是不會允許自己讓章魚燒燒焦的！",
+    "做章魚燒就像是在打地鼠，眼不夠疾，手不夠快，你就輸了！",
+    "小撇步：一次收完一整圈章魚燒，再重新開始煎能夠減少失敗率喔！"
+  ];
+
+  // 🎯 跑馬燈訊息輪播
+  useEffect(() => {
+    let index = 0;
+
+    function playMarquee() {
+      const el = marqueeRef.current;
+      if (!el) return;
+
+      el.classList.remove("marquee-content");
+      void el.offsetWidth; // 強制 reflow
+      el.textContent = messages[index];
+      el.classList.add("marquee-content");
+
+      setCurrentMessageIndex(index);
+
+      setTimeout(() => {
+        index = (index + 1) % messages.length;
+        playMarquee();
+      }, 12000); // 10 秒動畫 + 2 秒間隔
+    }
+
+    playMarquee();
+  }, []);
+
+  // 音量初始化
+  useEffect(() => {
+    if (popSound.current) popSound.current.volume = 0.2;
+    if (cookSound.current) cookSound.current.volume = 0.8;
+  }, []);
+
+  // 倒數計時與難度提升
   useEffect(() => {
     if (timer <= 0) {
-      if (goodScore >= 30) {
-        setSuccess(true);
-      }
       setShowOverlay(true);
+      if (goodScore >= 50) setSuccess(true);
       return;
     }
     const countdown = setInterval(() => {
       setTimer((prev) => prev - 1);
+      setDifficultyLevel((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(countdown);
   }, [timer]);
 
+  // 每秒更新食材狀態
   useEffect(() => {
     const interval = setInterval(() => {
-      setHoles((prev) =>
-        prev.map((hole) => {
-          if (hole.state === "raw" && hole.timer >= 5) return { state: "cooked", timer: 0 };
-          if (hole.state === "cooked" && hole.timer >= 2) return { state: "burnt", timer: 0 };
+      setHoles((prev) => {
+        const rawToCookedTime = Math.max(1, 5 - Math.floor(difficultyLevel / 10));
+        return prev.map((hole) => {
+          if (hole.state === "raw" && hole.timer >= rawToCookedTime) {
+            return { state: "cooked", timer: 0 };
+          }
+          if (hole.state === "cooked" && hole.timer >= 2) {
+            return { state: "burnt", timer: 0 };
+          }
           if (hole.state === "raw" || hole.state === "cooked") {
             return { ...hole, timer: hole.timer + 1 };
           }
           return hole;
-        })
-      );
+        });
+      });
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [difficultyLevel]);
 
   const handleClick = (index) => {
+    const hole = holes[index];
+
+    if (["empty", "cooked", "burnt"].includes(hole.state)) {
+      popSound.current?.play();
+    }
+    if (cookSound.current?.paused) {
+      cookSound.current.play().catch(() => {});
+    }
+
+    if (hole.state === "cooked") {
+      setGoodScore((g) => g + 1);
+    } else if (hole.state === "burnt") {
+      setBadScore((b) => b + 1);
+    }
+
     setHoles((prev) => {
-      const hole = prev[index];
       const newHoles = [...prev];
       if (hole.state === "empty") {
         newHoles[index] = { state: "raw", timer: 0 };
-      } else if (hole.state === "cooked") {
+      } else if (hole.state === "cooked" || hole.state === "burnt") {
         newHoles[index] = { state: "empty", timer: 0 };
-        setGoodScore((g) => g + 1);
-      } else if (hole.state === "burnt") {
-        newHoles[index] = { state: "empty", timer: 0 };
-        setBadScore((b) => b + 1);
       }
       return newHoles;
     });
@@ -62,7 +121,6 @@ export default function Game5Canvas() {
   return (
     <div className="game-wrapper">
       <div className="game-container">
-        {/* Info Panel */}
         <div className="info-panel">
           <div className="timer-box">
             <img src="/images/clock.png" className="timer-img" />
@@ -80,18 +138,32 @@ export default function Game5Canvas() {
           </div>
         </div>
 
-        {/* Grill Panel */}
-        <div className="grill-panel">
-          {holes.map((hole, idx) => (
-            <div
-              key={idx}
-              className={getHoleClass(hole.state)}
-              onClick={() => handleClick(idx)}
-            />
-          ))}
+        <div className="right-panel">
+          <div className="grill-panel">
+            {holes.map((hole, idx) => (
+              <div
+                key={idx}
+                className={getHoleClass(hole.state)}
+                onClick={() => handleClick(idx)}
+              />
+            ))}
+          </div>
+
+          <div className="hint-panel">
+            <img src="/images/taco man.png" className="hint-img" />
+
+            <div className="marquee large-only">
+              <div className="marquee-content key-transition" ref={marqueeRef}>
+                {messages[currentMessageIndex]}
+              </div>
+            </div>
+
+            <p className="static-hint small-only">
+              注意：章魚燒要記得及時起鍋，不然很快就會燒焦囉！
+            </p>
+          </div>
         </div>
 
-        {/* 成功過關後彈窗 */}
         {showOverlay && (
           <div className="overlay">
             <div className="result-box">
@@ -100,14 +172,9 @@ export default function Game5Canvas() {
                 alt={success ? "挑戰成功" : "挑戰失敗"}
                 className="result-icon"
               />
-              <h2 className="result-title">
-                {success ? "挑戰成功" : "挑戰失敗"}
-              </h2>
+              <h2 className="result-title">{success ? "挑戰成功" : "挑戰失敗"}</h2>
               <div className="result-buttons">
-                <button
-                  className="btn btn-gold"
-                  onClick={() => (window.location.href = "/")}
-                >
+                <button className="btn btn-gold" onClick={() => (window.location.href = "/")}>
                   回到首頁
                 </button>
                 <button
@@ -117,6 +184,7 @@ export default function Game5Canvas() {
                     setGoodScore(0);
                     setBadScore(0);
                     setTimer(60);
+                    setDifficultyLevel(0);
                     setShowOverlay(false);
                     setSuccess(false);
                   }}
@@ -127,8 +195,9 @@ export default function Game5Canvas() {
             </div>
           </div>
         )}
-
       </div>
+      <audio ref={popSound} src="/sounds/pop.mp3" preload="auto" />
+      <audio ref={cookSound} src="/sounds/cook.mp3" preload="auto" loop />
     </div>
   );
 }
