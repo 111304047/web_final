@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "../AuthContext";
 
 const MAX_SHOTS = 5;
+const BASE_SIZE = 400; // 基準畫布大小
 const PRIZES = [
   { x: 160, y: 95, r: 28 }, { x: 240, y: 95, r: 28 },
   { x: 120, y: 165, r: 28 }, { x: 200, y: 165, r: 28 }, { x: 280, y: 165, r: 28 },
@@ -35,6 +36,23 @@ export default function Game7Canvas() {
   const prizeImagesRef = useRef([]);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const shootBgImg = useRef(null);
+  const myShotImg = useRef(null);
+
+  // 分數進度條動畫
+  const [displayScore, setDisplayScore] = useState(0);
+  const [canvasSize, setCanvasSize] = useState(BASE_SIZE);
+
+  // 響應式監聽
+  useEffect(() => {
+    function handleResize() {
+      // 最小 320，最大 400，可依需求調整
+      const size = Math.max(320, Math.min(window.innerWidth - 32, BASE_SIZE));
+      setCanvasSize(size);
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // 載入獎品圖片
   useEffect(() => {
@@ -60,6 +78,31 @@ export default function Game7Canvas() {
     shootBgImg.current = bg;
   }, []);
 
+  // 載入射擊次數標記
+  useEffect(() => {
+    const img = new window.Image();
+    img.src = "/game7/myShot.png";
+    myShotImg.current = img;
+  }, []);
+
+  // 分數變動時，平滑動畫顯示
+  useEffect(() => {
+    if (displayScore === score) return;
+    let raf;
+    function animateScore() {
+      setDisplayScore(prev => {
+        if (prev === score) return prev;
+        const diff = score - prev;
+        const step = Math[diff > 0 ? "ceil" : "floor"](prev + diff * 0.025);  // 進度條增長速度 0.025
+        if (Math.abs(diff) < 2) return score;
+        return step;
+      });
+      raf = requestAnimationFrame(animateScore);
+    }
+    animateScore();
+    return () => raf && cancelAnimationFrame(raf);
+  }, [score]); // 只依賴 score
+
   // 遊戲畫面
   useEffect(() => {
     if (stage !== "playing") return;
@@ -68,67 +111,189 @@ export default function Game7Canvas() {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
-      ctx.clearRect(0, 0, 400, 300);
+      // 在 animate() 取得 ctx 之後加上高畫質處理
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvasSize * dpr;
+      canvas.height = canvasSize * dpr;
+      canvas.style.width = `${canvasSize}px`;
+      canvas.style.height = `${canvasSize}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+      // 比例縮放
+      const scale = canvasSize / BASE_SIZE;
 
       // 畫背景
       const bg = shootBgImg.current;
       if (bg && bg.complete) {
-        ctx.drawImage(bg, 0, 0, 400, 400);
+        ctx.drawImage(bg, 0, 0, canvasSize, canvasSize);
       }
 
       // 畫獎品
       PRIZES.forEach((p, idx) => {
+        if (hits.includes(idx)) return;
         const img = prizeImagesRef.current[idx];
+        const px = p.x * scale, py = p.y * scale, pr = p.r * scale;
         if (img && img.complete) {
-          // 若已命中則灰階顯示
-          if (hits.includes(idx)) {
-            ctx.save();
-            ctx.filter = "grayscale(1)";
-            ctx.drawImage(img, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
-            ctx.restore();
-          } else {
-            ctx.drawImage(img, p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
-          }
-        } else {
-          // 若圖片未載入則畫圓形
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI);
-          ctx.fillStyle = hits.includes(idx) ? "#aaa" : "#C5AC6B";
-          ctx.fill();
-          ctx.strokeStyle = "#505166";
-          ctx.stroke();
-        }
+          ctx.drawImage(img, px - pr, py - pr, pr * 2, pr * 2);
+        } 
       });
 
       // 畫 QTE
       if (qteStep === 1) {
         ctx.strokeStyle = "#E36B5B";
         ctx.beginPath();
-        ctx.moveTo(0, qteY);
-        ctx.lineTo(400, qteY);
+        ctx.moveTo(0, qteY * scale);
+        ctx.lineTo(canvasSize, qteY * scale);
         ctx.stroke();
       }
       if (qteStep === 2) {
-        // 水平
         ctx.strokeStyle = "#E36B5B";
         ctx.beginPath();
-        ctx.moveTo(qteX, 0);
-        ctx.lineTo(qteX, 300);
+        ctx.moveTo(qteX * scale, 0);
+        ctx.lineTo(qteX * scale, canvasSize);
         ctx.stroke();
-        // 垂直
-        ctx.strokeStyle = "#E3B95B";
+        ctx.strokeStyle = "#E36B5B";
         ctx.beginPath();
-        ctx.moveTo(0, qteY);
-        ctx.lineTo(400, qteY);
+        ctx.moveTo(0, qteY * scale);
+        ctx.lineTo(canvasSize, qteY * scale);
         ctx.stroke();
       }
-
-      // 命中點
       if (qteStep === 3) {
         ctx.fillStyle = "#E36B5B";
         ctx.beginPath();
-        ctx.arc(qteX, qteY, 8, 0, 2 * Math.PI);
+        ctx.arc(qteX * scale, qteY * scale, 8 * scale, 0, 2 * Math.PI);
         ctx.fill();
+      }
+
+      // 分數進度條
+      const maxScore = 100 * MAX_SHOTS;
+      const barWidth = 140 * scale;
+      const barHeight = 12 * scale;
+      const barX = 25 * scale;
+      const barY = 25 * scale; 
+      const percent = Math.min(displayScore / maxScore, 1);
+
+      // 進度條底
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#eee";
+      ctx.beginPath();
+      ctx.roundRect(barX, barY, barWidth, barHeight, 6 * scale);
+      ctx.fill();
+      ctx.strokeStyle = "#F5F0E4";
+      ctx.lineWidth = 2 * scale;
+      ctx.stroke();
+      ctx.restore();
+
+      // 進度條(進度)
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(barX, barY, barWidth * percent, barHeight, 6 * scale);
+      ctx.clip();
+      ctx.fillStyle = "#E36B5B";
+      ctx.fillRect(barX, barY, barWidth * percent, barHeight);
+      ctx.restore();
+
+      // 分數進度條左側圓形與文字
+      const circleR = 18 * scale;
+      const circleX = barX + circleR - 13 * scale;
+      const circleY = barY + barHeight / 2;
+
+      // 得分標示（圓）
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(circleX, circleY, circleR, 0, 2 * Math.PI);
+      ctx.fillStyle = "#C5AC6B";
+      ctx.globalAlpha = 1;
+      ctx.fill();
+      ctx.lineWidth = 2 * scale;
+      ctx.strokeStyle = "#F5F0E4";
+      ctx.globalAlpha = 1;
+      ctx.stroke();
+
+      // 得分標示（文字）
+      ctx.font = ` ${16 * scale}px sans-serif`;
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("Pt", circleX, circleY+2);
+      ctx.restore();
+
+      // 標示 B, A, S
+      const labelY = barY + barHeight + 14 * scale;
+      ctx.font = `bold ${12 * scale}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      const bScore = maxScore * 0.6;
+      const aScore = maxScore * 0.8;
+      const sScore = maxScore * 1.0;
+      ctx.fillStyle = displayScore >= bScore ? "#C5AC6B" : "#bbb";
+      ctx.fillText("B", barX + barWidth * 0.6, labelY);
+      ctx.fillStyle = displayScore >= aScore ? "#C5AC6B" : "#bbb";
+      ctx.fillText("A", barX + barWidth * 0.8, labelY);
+      ctx.fillStyle = displayScore >= sScore ? "#C5AC6B" : "#bbb";
+      ctx.fillText("S", barX + barWidth * 1.0, labelY);
+
+      // 玩法提示文字
+      if (stage === "playing") {
+        let tip = "";
+        if (qteStep === 1) tip = "按下 SPACE";
+        if (qteStep === 2) tip = "按下 SPACE";
+
+        if (tip) {
+          // 閃爍透明度
+          const now = Date.now();
+          const flicker = 0.75 + 0.25 * Math.sin(now / 300); // 閃爍速度
+
+          const tipFontSize = 16 * scale;
+          ctx.font = ` ${tipFontSize}px sans-serif`;
+          const textWidth = ctx.measureText(tip).width;
+          const tipWidth = Math.max(textWidth + 48 * scale, 120 * scale);
+          const tipHeight = 32 * scale;
+          const tipX = canvasSize / 2 - tipWidth / 2;
+          const tipY = canvasSize - tipHeight - 24 * scale;
+
+          // 底色閃爍
+          ctx.save();
+          ctx.globalAlpha = 0.65 * flicker;
+          ctx.fillStyle = "#fff";
+          if (ctx.roundRect) {
+            ctx.beginPath();
+            ctx.roundRect(tipX, tipY, tipWidth, tipHeight, 16 * scale);
+            ctx.fill();
+          } 
+          ctx.restore();
+
+          // 文字閃爍
+          ctx.save();
+          ctx.globalAlpha = 0.8 * flicker;
+          ctx.font = ` ${tipFontSize}px sans-serif`;
+          ctx.fillStyle = "#505166";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(tip, canvasSize / 2, tipY + tipHeight / 2);
+          ctx.restore();
+        }
+      }
+
+      // 繪製 myShot.png
+      const shotSize = 28 * scale;     
+      const shotGap = 3 * scale;    
+      const shotY = 18 * scale;     
+      const shotX = canvasSize - (shotSize + shotGap) * MAX_SHOTS - 8 * scale; // 靠右排列
+      for (let i = 0; i < MAX_SHOTS; i++) {
+        const x = shotX + i * (shotSize + shotGap);
+        const y = shotY;
+        if (myShotImg.current && myShotImg.current.complete) {
+          ctx.save();
+          if (i >= shotsLeft) {
+            ctx.filter = "grayscale(1)";
+          }
+          ctx.drawImage(myShotImg.current, x, y, shotSize, shotSize);
+          ctx.restore();
+        }
       }
     }
 
@@ -168,7 +333,7 @@ export default function Game7Canvas() {
       });
     }
     return () => req && cancelAnimationFrame(req);
-  }, [qteStep, qteX, qteY, qteVX, qteVY, hits, stage]);
+  }, [qteStep, qteX, qteY, qteVX, qteVY, hits, stage, score, displayScore, canvasSize]);
 
   // 開始遊戲
   const startGame = () => {
@@ -383,20 +548,12 @@ export default function Game7Canvas() {
       {/* 遊戲進行 */}
       {stage === "playing" && (
         <div style={{ textAlign: "center" }}>
-          <div style={{ marginBottom: 8 }}>
-            射擊次數：{shotsLeft}　分數：{score}
-          </div>
           <canvas
             ref={canvasRef}
-            width={400}
-            height={400} // 高度由300改為400
-            style={{ border: "2px solid #ccc", background: "#fff" }}
+            width={canvasSize}
+            height={canvasSize}
+            style={{ border: "2px solid #ccc", background: "#fff", width: "100%", maxWidth: 400, height: "auto" }}
           />
-          <div style={{ marginTop: 8, color: "#888" }}>
-            {qteStep === 1 && "按 SPACE 鎖定水平線"}
-            {qteStep === 2 && "按 SPACE 鎖定垂直線"}
-            {qteStep === 3 && "判定中..."}
-          </div>
         </div>
       )}
 
@@ -411,13 +568,13 @@ export default function Game7Canvas() {
           maxWidth: 400,
           margin: "40px auto"
         }}>
-          <h2>遊戲結束</h2>
-          <div>得分：{score}</div>
+          <h2 style={{ color: "#505166" }}>遊戲結束</h2>
+          <div style={{ color: "#505166" }}>得分：{score}</div>
           <div>評價：{getGrade(score)}</div>
           <div style={{ margin: "16px 0" }}>
             {getGrade(score) === "A" || getGrade(score) === "S"
               ? <span style={{ color: "#C5AC6B" }}>恭喜通關！</span>
-              : <span style={{ color: "#E36B5B" }}>未達A級，再接再厲！</span>
+              : <span style={{ color: "#E36B5B" }}>未達A級，挑戰失敗...</span>
             }
           </div>
           <button
@@ -452,7 +609,8 @@ export default function Game7Canvas() {
             返回主頁
           </button>
         </div>
-      )}
+      )
+      }
     </>
   );
 }
@@ -464,3 +622,4 @@ function getGrade(score) {
   if (score >= 300) return "B";
   return "C";
 }
+
