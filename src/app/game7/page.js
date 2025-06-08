@@ -1,6 +1,3 @@
-//Test
-
-
 import React from "react";
 import Game7Canvas from "../components/game7.js";
 
