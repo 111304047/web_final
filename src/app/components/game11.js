@@ -9,7 +9,7 @@ export default function Game11Canvas() {
   const { user, login } = useAuth();
 
   useEffect(() => {
-    const hasCleared = localStorage.getItem("game2Success") === "true";
+    const hasCleared = localStorage.getItem("game11Success") === "true";
     if (hasCleared) {
       setSuccess(false); 
       setShowOverlay(false);
@@ -18,7 +18,7 @@ export default function Game11Canvas() {
 
   // 當過關時呼叫此函式
   async function handleSuccess() {
-    localStorage.setItem("game2Success", "true");
+    localStorage.setItem("game11Success", "true");
     setSuccess(true);
     setShowOverlay(true);
     // SCORE +1 並同步到 DB
@@ -42,22 +42,43 @@ export default function Game11Canvas() {
   }
 
   return (
-    <>
-      {/* 這裡放你的遊戲元件或互動內容，預設只留一個模擬過關按鈕 */}
-      <button
-        onClick={handleSuccess}
-        style={{
-          padding: "12px 32px",
-          fontSize: 20,
-          borderRadius: 8,
-          background: "#C5AC6B",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        模擬過關11（請改成你自己的過關條件）
-      </button>
+    <div style={{ width: '100%', height: '100%', backgroundColor: '#222222', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <img 
+        src="/lantern.png" alt="lantern" 
+        style={{position: 'absolute', top: 0, left: 0, width: '100%', height: 120, objectFit: 'cover', zIndex: 0}}
+      />
+      
+      {/* 中央區域：達摩塔與棍棒 */}
+      <div style={{ flexGrow: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', marginBottom: 10, zIndex: 1 }}>
+        {/* 達摩塔磚塊 */}
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end'}}>
+          <div><img src="/daruma.png" alt="daruma" style={{ width: 135, height: 93.5 }} /></div>
+          <div><img src="/brick_4.png" alt="brick_4" style={{ width: 135, height: 64 }} /></div>
+          <div><img src="/brick_3.png" alt="brick_3" style={{ width: 135, height: 64 }} /></div>
+          <div><img src="/brick_2.png" alt="brick_2" style={{ width: 135, height: 64 }} /></div>
+          <div><img src="/brick_1.png" alt="brick_1" style={{ width: 135, height: 64 }} /></div>
+        </div>
+
+        {/* 棍棒圖像，從右側揮向達摩塔，擺在塔的下方右側，稍微傾斜 */}
+        <img 
+          src="/stick.png" 
+          alt="stick" 
+          style={{ 
+            position: 'absolute', 
+            right: 'calc(50% - 250px)', 
+            width: 180, 
+            height: 60, 
+            transformOrigin: 'right center',
+            userSelect: 'none',
+            pointerEvents: 'none',
+          }} 
+        />
+      </div>
+
+      {/* 下方進度條 */}
+      <div style={{ height: 12, backgroundColor: 'rgba(245, 240, 228, 0.9)', margin: '0 24px 16px', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ width: '50%', height: '100%', backgroundColor: '#E36B5B', transition: 'width 0.3s ease' }}></div>
+      </div>
 
       {/* 成功過關後彈窗 */}
       {showOverlay && (
@@ -98,7 +119,7 @@ export default function Game11Canvas() {
                   // 重置遊戲狀態
                   setShowOverlay(false);
                   setSuccess(false);
-                  localStorage.removeItem("game2Success");
+                  localStorage.removeItem("game11Success");
                   // TODO: 這裡也要重置你自己的遊戲狀態
                 }}
                 style={{
@@ -137,6 +158,6 @@ export default function Game11Canvas() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
-} 
+}
