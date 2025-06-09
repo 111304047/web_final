@@ -23,11 +23,51 @@ export default function Game3Canvas() {
   const [flipped, setFlipped] = useState([]);
   const [matchedCount, setMatchedCount] = useState(0);
   const [countdown, setCountdown] = useState(3);
-  const [timeLeft, setTimeLeft] = useState(90);
+  const [timeLeft, setTimeLeft] = useState(105);
   const [started, setStarted] = useState(false);
   const [result, setResult] = useState(null);
   const [showIntro, setShowIntro] = useState(true);
+  const [success, setSuccess] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
   const { user, login } = useAuth();
+
+  // 模擬登入使用者（若尚未登入）
+  useEffect(() => {
+    if (!user) {
+      login({ username: "guest", score: 0 });
+    }
+  }, [user, login]);
+
+  useEffect(() => {
+    const hasCleared = localStorage.getItem("game3Success") === "true";
+    if (hasCleared) {
+      setSuccess(false); 
+      setShowOverlay(false);
+    }
+  }, []);
+
+  async function handleSuccess() {
+    localStorage.setItem("game3Success", "true");
+    setSuccess(true);
+    setShowOverlay(true);
+    if (user && user.username) {
+      const newScore = (user.score || 0) + 1;
+      try {
+        const res = await fetch("/api/auth", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: user.username, score: newScore })
+        });
+        if (res.ok) {
+          login({ ...user, score: newScore });
+        } else {
+          console.error("Failed to update score");
+        }
+      } catch (err) {
+        console.error("Error updating score:", err);
+      }
+    }
+  }
 
   useEffect(() => {
     if (countdown > 0 && !showIntro) {
@@ -49,6 +89,7 @@ export default function Game3Canvas() {
 
   useEffect(() => {
     if (matchedCount === 12) {
+      handleSuccess();
       setResult("success");
     }
   }, [matchedCount]);
@@ -88,7 +129,7 @@ export default function Game3Canvas() {
     setFlipped([]);
     setMatchedCount(0);
     setResult(null);
-    setTimeLeft(90);
+    setTimeLeft(105);
     setCountdown(3);
     setStarted(false);
     setShowIntro(true);
@@ -102,7 +143,7 @@ export default function Game3Canvas() {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'flex-start',
-      position: 'relative',
+      position: 'relative'
     }}>
       {showIntro && (
         <div style={{
@@ -114,7 +155,7 @@ export default function Game3Canvas() {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'flex-end',
-          alignItems: 'center',
+          alignItems: 'center'
         }}>
           <button
             onClick={() => setShowIntro(false)}
@@ -128,7 +169,7 @@ export default function Game3Canvas() {
               color: '#fff',
               border: 'none',
               borderRadius: '12px',
-              cursor: 'pointer',
+              cursor: 'pointer'
             }}
           >
             開始遊戲
@@ -144,7 +185,7 @@ export default function Game3Canvas() {
         background: '#fef9f4',
         padding: '0.4rem 2rem',
         borderRadius: '12px',
-        color: '#505166',
+        color: '#505166'
       }}>
         {formatTime(timeLeft)}
       </div>
@@ -159,7 +200,7 @@ export default function Game3Canvas() {
           padding: '1rem',
           width: '80vw',
           maxWidth: '1000px',
-          marginTop: 'clamp(40px, 12vh, 100px)',
+          marginTop: 'clamp(40px, 12vh, 100px)'
         }}
       >
         {cards.map((card, i) => (
@@ -170,7 +211,7 @@ export default function Game3Canvas() {
               perspective: '800px',
               cursor: 'pointer',
               height: 'clamp(10px, 12vh, 100px)',
-              aspectRatio: '1 / 1',
+              aspectRatio: '1 / 1'
             }}
           >
             <div style={{
@@ -179,29 +220,16 @@ export default function Game3Canvas() {
               transformStyle: 'preserve-3d',
               position: 'relative',
               transition: 'transform 0.6s',
-              transform: card.flipped || card.matched ? 'rotateY(180deg)' : 'rotateY(0deg)',
+              transform: card.flipped || card.matched ? 'rotateY(180deg)' : 'rotateY(0deg)'
             }}>
-              <img src={`/${cardBack}`} alt="back" style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                backfaceVisibility: 'hidden',
-              }} />
-              <img src={`/${card.image}`} alt="face" style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-                backfaceVisibility: 'hidden',
-                transform: 'rotateY(180deg)',
-              }} />
+              <img src={`/${cardBack}`} alt="back" style={{ position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden' }} />
+              <img src={`/${card.image}`} alt="face" style={{ position: 'absolute', width: '100%', height: '100%', backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }} />
             </div>
           </div>
         ))}
       </div>
 
-      {!started && countdown > 0 && (
-        <div style={countdownStyle}>{countdown}</div>
-      )}
+      {!started && countdown > 0 && <div style={countdownStyle}>{countdown}</div>}
 
       {result && (
         <div style={resultOverlayStyle}>
@@ -245,7 +273,7 @@ const countdownStyle = {
   color: '#fff',
   background: '#505166',
   padding: '2rem 3rem',
-  borderRadius: '2rem',
+  borderRadius: '2rem'
 };
 
 const resultOverlayStyle = {
@@ -258,7 +286,7 @@ const resultOverlayStyle = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  zIndex: 10,
+  zIndex: 10
 };
 
 const btnStyle = (bg) => ({
@@ -269,5 +297,5 @@ const btnStyle = (bg) => ({
   borderRadius: '12px',
   fontSize: 16,
   fontWeight: 600,
-  cursor: 'pointer',
+  cursor: 'pointer'
 });
