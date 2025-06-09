@@ -115,19 +115,19 @@ export default function Game11Canvas() {
   // 擊破點位置
   const BREAK_POINTS = {
     star: [
-      { x: 0.3, y: 0.2 },
-      { x: 0.7, y: 0.2 },
-      { x: 0.5, y: 0.6 },
+      { x: 0.15, y: 0.3 },
+      { x: 0.85, y: 0.3 },
+      { x: 0.5, y: 0.9 },
     ],
     tri: [
       { x: 0.5, y: 0.1 },
-      { x: 0.2, y: 0.8 },
-      { x: 0.8, y: 0.8 },
+      { x: 0.15, y: 0.7 },
+      { x: 0.85, y: 0.7 },
     ],
     umbrella: [
-      { x: 0.5, y: 0.3 },
-      { x: 0.3, y: 0.6 },
-      { x: 0.7, y: 0.6 },
+      { x: 0.83, y: 0.5 },
+      { x: 0.2, y: 0.5 },
+      { x: 0.5, y: 0.8 },
     ],
   };
 
@@ -154,50 +154,52 @@ export default function Game11Canvas() {
   };
 
   // 指針移動邏輯 (使用 useEffect 和 setInterval)
-  useEffect(() => {
-    let interval;
+useEffect(() => {
+  let interval;
+  const MIN_POS = 5; // 例如，最小位置設為2%
+  const MAX_POS = 98; // 例如，最大位置設為98%
 
-    if (moving && selectedCandy !== null) {
-      const speed = GAME_SPEEDS[selectedCandy];
+  if (moving && selectedCandy !== null) {
+    const speed = GAME_SPEEDS[selectedCandy];
 
-      interval = setInterval(() => {
-        setPointerPosition((prevPos) => {
-          let newPos = prevPos;
+    interval = setInterval(() => {
+      setPointerPosition((prevPos) => {
+        let newPos = prevPos;
 
-          if (direction) {
-            newPos = prevPos + 1;
-            if (newPos >= 100) {
-              setDirection(false);
-              return 100;
-            }
-          } else {
-            newPos = prevPos - 1;
-            if (newPos <= 0) {
-              setDirection(true);
-              return 0;
-            }
+        if (direction) {
+          newPos = prevPos + 1;
+          if (newPos >= MAX_POS) { // 碰到最大限制
+            setDirection(false);
+            return MAX_POS;
           }
-          return newPos;
-        });
-      }, speed);
-    } else {
-      clearInterval(interval);
-    }
+        } else {
+          newPos = prevPos - 1;
+          if (newPos <= MIN_POS) { // 碰到最小限制
+            setDirection(true);
+            return MIN_POS;
+          }
+        }
+        return newPos;
+      });
+    }, speed);
+  } else {
+    clearInterval(interval);
+  }
 
-    return () => clearInterval(interval);
-  }, [moving, direction, selectedCandy]);
+  return () => clearInterval(interval);
+}, [moving, direction, selectedCandy]);
 
  
 
   // 計算指針的 'left' 樣式 (像素值)
-  const calculatedPointerLeft = () => {
-    if (barRef.current) {
-      const barWidth = barRef.current.offsetWidth;
-      const pointerHalfWidth = 30 / 2;
-      return (pointerPosition / 100) * barWidth - pointerHalfWidth;
-    }
-    return 0;
-  };
+const calculatedPointerLeft = () => {
+  if (barRef.current) {
+    const barWidth = barRef.current.offsetWidth;
+    // 直接計算指針中心點在bar中的百分比位置
+    return (pointerPosition / 100) * barWidth;
+  }
+  return 0; // 如果barRef還沒有被渲染，返回0
+};
 
   // STOP 按鈕的處理函數
   // 注意：如果您將 handleStop 包裹在 useCallback 中，可以避免它在每次渲染時重新創建，進而穩定 useEffect 的依賴
