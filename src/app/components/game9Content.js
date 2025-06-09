@@ -9,7 +9,7 @@ import {
   ContactShadows,
   PerspectiveCamera,
 } from "@react-three/drei";
-import { Suspense, useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef, useMemo } from "react";
 import * as THREE from "three";
 
 function Apple({ isGameActive, onSuccess, onFail }) {
@@ -143,13 +143,96 @@ function CameraSetup() {
 }
 
 export default function Game9Content({ onSuccess, onFail, isGameActive }) {
+  // 這是正確的方向鍵序列
+  const correctSequence = useMemo(() => [
+    "ArrowLeft", "ArrowUp", "ArrowRight", 
+    "ArrowLeft", "ArrowUp", "ArrowRight", 
+    "ArrowLeft", "ArrowUp", "ArrowRight", 
+    "ArrowLeft", "ArrowUp", "ArrowRight", 
+    "ArrowLeft", "ArrowUp", "ArrowRight"
+  ], []);
+
+  // 方向鍵對應圖片檔名
+  const arrowImageMap = {
+    ArrowLeft: {
+      off: "/9-left-off.png",
+      on: "/9-left-on.png",
+      select: "/9-left-select.png"
+    },
+    ArrowUp: {
+      off: "/9-up-off.png",
+      on: "/9-up-on.png",
+      select: "/9-up-select.png"
+    },
+    ArrowRight: {
+      off: "/9-right-off.png",
+      on: "/9-right-on.png",
+      select: "/9-right-select.png"
+    }
+  };
+
+  // 取得目前輸入進度
+  const [inputSequence, setInputSequence] = useState([]);
+  // 下面這段 useEffect 只要保留一次即可，移到這裡
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!isGameActive) return;
+      const validKeys = ["ArrowLeft", "ArrowUp", "ArrowRight"];
+      if (!validKeys.includes(event.key)) return;
+      setInputSequence((prev) => {
+        const newSequence = [...prev, event.key].slice(-15);
+        return newSequence;
+      });
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isGameActive]);
+
   return (
-    <div style={{ width: "100%", height: "80vh" }}>
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      {/* 方向鍵提示區塊 */}
+      <div
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "80%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 30,
+          background: "rgba(255,255,255,0.8)",
+          borderRadius: "16px",
+          padding: "12px 24px",
+          fontSize: "2rem",
+          fontWeight: "bold",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+          pointerEvents: "none"
+        }}
+      >
+        {correctSequence.map((key, idx) => {
+          let state = "off";
+          if (idx < inputSequence.length) {
+            state = inputSequence[idx] === key ? "on" : "off";
+          }
+          if (idx === inputSequence.length) {
+            state = "select";
+          }
+          return (
+            <img
+              key={idx}
+              src={arrowImageMap[key][state]}
+              alt={key + "-" + state}
+              style={{ width: 25, height: 25, margin: "0 4px", verticalAlign: "middle"}}
+            />
+          );
+        })}
+      </div>
+      {/* Canvas */}
       <Canvas
         gl={{
           toneMapping: THREE.ACESFilmicToneMapping,
           outputColorSpace: THREE.SRGBColorSpace,
+          alpha: true,
         }}
+        style={{ background: "transparent" }}
       >
         <PerspectiveCamera makeDefault position={[1.5, 1.5, 2.5]} fov={75} near={0.1} far={100}>
           <CameraSetup />

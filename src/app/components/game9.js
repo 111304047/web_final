@@ -11,6 +11,7 @@ export default function Game9Canvas() {
   const [isGameActive, setIsGameActive] = useState(false); // 控制遊戲是否啟動
   const statusRef = useRef(status);  // 使用 useRef 存儲狀態，避免重新渲染
   const setStatusRef = useRef(setStatus); // 用於存儲 setStatus 函數，避免直接更新
+  const [showScorePopup, setShowScorePopup] = useState(false);
 
   useEffect(() => {
     const hasCleared = localStorage.getItem("game2Success") === "true";
@@ -21,11 +22,10 @@ export default function Game9Canvas() {
 
   async function handleSuccess() {
     localStorage.setItem("game2Success", "true");
-    statusRef.current = "success"; // 通過 ref 更新狀態
+    statusRef.current = "success";
     setStatusRef.current("success");
-
     if (user?.username) {
-      const newScore = (user.score || 0) + 1;
+      const newScore = (user.score || 0) + 10;
       try {
         const res = await fetch("/api/auth", {
           method: "PATCH",
@@ -40,14 +40,32 @@ export default function Game9Canvas() {
     }
   }
 
-  function handleFail() {
-    setTimeout(() => {
-      statusRef.current = "fail";  // 通過 ref 更新狀態
+  async function handleFail() {
+    setTimeout(async () => {
+      statusRef.current = "fail";
       setStatusRef.current("fail");
-    }, 0); // 延遲 0 毫秒，確保渲染結束後再更新狀態
+      if (user?.username) {
+        const newScore = (user.score || 0) - 5;
+        try {
+          const res = await fetch("/api/auth", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: user.username, score: newScore }),
+          });
+          if (res.ok) login({ ...user, score: newScore });
+          else console.error("Failed to update score");
+        } catch (err) {
+          console.error("Error updating score:", err);
+        }
+      }
+    }, 0);
   }
 
   const handleStartGame = () => {
+    if ((user?.score || 0) < 5) {
+      setShowScorePopup(true);
+      return;
+    }
     setShowGuidance(false); // 開始遊戲後隱藏遊戲說明
     setIsGameActive(true); // 啟動遊戲
   };
@@ -180,6 +198,71 @@ export default function Game9Canvas() {
                 Back
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showScorePopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.25)",
+            zIndex: 99999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              width: "350px",
+              height: "200px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              padding: "1.5rem",
+              border: "3px solid #C5AC6B",
+              color: "#C5AC6B",
+              background: "#fff",
+              borderRadius: "16px",
+              boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
+            }}
+          >
+            <h2
+              style={{
+                color: "#505166",
+                fontSize: 22,
+                fontWeight: 700,
+                marginBottom: 18,
+                textAlign: "center",
+              }}
+            >
+              分數不足，請獲得更多分數再來！
+            </h2>
+            <button
+              onClick={() => {
+                setShowScorePopup(false);
+                window.location.href = "/";
+              }}
+              style={{
+                padding: "8px 24px",
+                color: "#fff",
+                background: "#505166",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+              }}
+            >
+              Back
+            </button>
           </div>
         </div>
       )}
