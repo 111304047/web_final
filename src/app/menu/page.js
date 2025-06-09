@@ -9,6 +9,21 @@ const iconMap = Object.fromEntries(
     .concat([['Home', '/menu/homeIcon.png']])
 );
 
+// 遊戲名稱
+const gameNames = [
+  "神之符印",
+  "恋祭の危機",
+  "面具對對碰",
+  "圈圈屋台",
+  "章魚燒不燒焦",
+  "撈撈撈金魚",
+  "百発百中",
+  "守護刨冰",
+  "副引き抽せんき",
+  "型抜き",
+  "だるま落とし"
+];
+
 const menuItems = [
   ...Array.from({ length: 11 }, (_, i) => ({ label: `game${i + 1}`, href: `/game${i + 1}` })),
   { label: 'Home', href: '/' },
@@ -50,7 +65,7 @@ export default function Menu() {
         boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
         position: 'relative',
     }}>
-      {/* 若圖片尚未載入完成 */}
+      {/* 若圖片未載入 */}
       {!loaded ? (
         <div style={{
           width: '100%',
@@ -96,15 +111,20 @@ export default function Menu() {
                   transition: 'background 0.2s',
                   padding: 0,
                   cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}
-                // hover 效果
                 onMouseEnter={e => {
                   const img = e.currentTarget.querySelector('img');
+                  const shadow = e.currentTarget.querySelector('.menu-shadow-label');
                   if (img) img.style.transform = 'scale(1.15)';
+                  if (shadow) shadow.style.opacity = 1;
                 }}
                 onMouseLeave={e => {
                   const img = e.currentTarget.querySelector('img');
+                  const shadow = e.currentTarget.querySelector('.menu-shadow-label');
                   if (img) img.style.transform = 'scale(1)';
+                  if (shadow) shadow.style.opacity = 0;
                 }}
                 onMouseDown={e => {
                   const img = e.currentTarget.querySelector('img');
@@ -130,6 +150,38 @@ export default function Menu() {
                     transition: 'transform 0.18s cubic-bezier(0.4,0,0.2,1)',
                   }}
                 />
+                {/* hover 顯示攤位名稱 */}
+                {(item.label.startsWith('game') || item.label === 'Home') && (
+                  <span
+                    className="menu-shadow-label"
+                    style={{
+                      position: 'absolute',
+                      left: '10%',
+                      right: '10%',
+                      bottom: '4%',
+                      height: '20%',
+                      background: 'rgba(255,255,255,0.75)',
+                      color: '#505166',
+                      fontSize: 20,
+                      fontWeight: 700,
+                      letterSpacing: 1,
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      justifyContent: 'center',
+                      paddingBottom: 2,
+                      borderRadius: 12,
+                      opacity: 0,
+                      pointerEvents: 'none',
+                      transition: 'opacity 0.35s cubic-bezier(0.4,0,0.2,1)',
+                      zIndex: 2,
+                      userSelect: 'none',
+                    }}
+                  >
+                    {item.label === 'Home'
+                      ? '返回入口'
+                      : gameNames[parseInt(item.label.replace('game', '')) - 1]}
+                  </span>
+                )}
               </Link>
             ))}
           </div>

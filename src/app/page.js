@@ -4,6 +4,19 @@ import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
+  const [btnScale, setBtnScale] = React.useState(1);
+  const [iconAnim, setIconAnim] = React.useState(false);
+
+  // 進入動畫結束後導向
+  React.useEffect(() => {
+    if (iconAnim) {
+      const timer = setTimeout(() => {
+        router.push('/menu');
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [iconAnim, router]);
+
   return (
     <div style={{
       minHeight: 'calc(100vh - 160px)', // 預留上方空間與下方 bar
@@ -21,9 +34,9 @@ export default function Home() {
     }}>
       <div
         style={{
-          width: 280,
-          height: 154,
-          borderRadius: 32,
+          width: 'min(max(40vw, 180px), 360px)',
+          height: 'min(max(22vw, 100px), 200px)',
+          borderRadius: 'min(max(4vw, 16px), 32px)',
           overflow: 'hidden',
           margin: '0 auto',
           display: 'flex',
@@ -40,10 +53,13 @@ export default function Home() {
             height: '100%',
             objectFit: 'cover',
             display: 'block',
+            borderRadius: 'min(max(4vw, 16px), 40px)',
+            transition: 'transform 0.6s cubic-bezier(0.4,0,0.2,1), opacity 0.6s cubic-bezier(0.4,0,0.2,1)',
+            transform: iconAnim ? 'scale(2.2)' : 'scale(1)',
+            opacity: iconAnim ? 0 : 1,
           }}
         />
       </div>
-      {/*<h1 style={{ color: '#C5AC6B', fontSize: 32, fontWeight: 700, marginTop: 24 }}>Home Page</h1>*/}
       <button
         style={{
           marginTop: 40,
@@ -56,8 +72,16 @@ export default function Home() {
           borderRadius: 12,
           cursor: 'pointer',
         boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        transition: 'transform 0.18s cubic-bezier(0.4,0,0.2,1)',
+        transform: `scale(${btnScale})`,
       }}
-      onClick={() => router.push('/menu')}
+      onMouseEnter={() => setBtnScale(1.08)}
+      onMouseLeave={() => setBtnScale(1)}
+      onMouseDown={() => setBtnScale(0.95)}
+      onMouseUp={() => setBtnScale(1.08)}
+      onClick={() => {
+        setIconAnim(true);
+      }}
       >
         進入
       </button>
