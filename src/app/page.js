@@ -79,15 +79,15 @@ export default function Home() {
         >
           <span
             style={{
-              fontSize: 'clamp(28px, 6vw, 48px)', // 隨螢幕寬度變化
+              fontSize: 'clamp(40px, 10vw, 80px)',
               fontWeight: 900,
               color: '#fff',
-              letterSpacing: 8,
-              textShadow: '0 2px 8px rgba(0,0,0,0.18)',
+              letterSpacing: 10,
+              textShadow: '0 2px 12px rgba(0,0,0,0.18)',
               lineHeight: 1.1,
               textAlign: 'center',
-              maxWidth: 600,
-              minWidth: 180,
+              maxWidth: 900,
+              minWidth: 220,
               overflowWrap: 'break-word',
               width: '100%',
               display: 'block',
