@@ -178,7 +178,7 @@ export default function Menu() {
                     }}
                   >
                     {item.label === 'Home'
-                      ? '返回入口'
+                      ? '出る'
                       : gameNames[parseInt(item.label.replace('game', '')) - 1]}
                   </span>
                 )}
