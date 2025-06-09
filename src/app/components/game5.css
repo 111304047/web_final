@@ -1,13 +1,13 @@
 /* 外包裝：可置中 + RWD */
 .game-wrapper {
-    width: 100%;
+    width: 90%;
     height: 100%;
     display: flex;
     justify-content: center;
     padding: 40px;
     box-sizing: border-box;
     overflow: scroll;
-    /* background: #505166; */
+    
     
   }
   
@@ -21,7 +21,7 @@
     width: 100%;
     height: 90%;
     box-sizing: border-box;
-    margin-top: 20px;
+    margin-bottom: 10px;
   }
   
   /* Info panel（左欄） */
@@ -118,8 +118,10 @@
     border-radius: 32px;
     flex: 1;
     box-sizing: border-box;
-    width: 100%;
+    width: 90%;
     max-width: 100%
+    
+    
   }
   
   .takoyaki-hole {
@@ -157,7 +159,7 @@
 
   .hint-panel {
     background-color:#E36B5B;
-    padding: 40px 30px;
+    padding: 20px 20px;
     border-radius: 16px;
     color:#F5F0E4;
     font-size: 1.2rem;
@@ -168,10 +170,11 @@
     justify-content: center;
     gap: 20px;
     letter-spacing: 0.05em;
+    width: 85%;
   }
 
   .hint-img {
-    width: 100px;
+    width: 80px;
   }
 
   /* 預設：大螢幕顯示跑馬燈，隱藏靜態文字 */
