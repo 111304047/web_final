@@ -31,13 +31,6 @@ export default function Game3Canvas() {
   const [showOverlay, setShowOverlay] = useState(false);
   const { user, login } = useAuth();
 
-  // 模擬登入使用者（若尚未登入）
-  useEffect(() => {
-    if (!user) {
-      login({ username: "guest", score: 0 });
-    }
-  }, [user, login]);
-
   useEffect(() => {
     const hasCleared = localStorage.getItem("game3Success") === "true";
     if (hasCleared) {
