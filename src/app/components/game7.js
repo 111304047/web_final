@@ -30,7 +30,7 @@ export default function Game7Canvas() {
   // 當前回合、彈窗狀態、結果提示
   const [currentRound, setCurrentRound] = useState(1);
   const [showRoundModal, setShowRoundModal] = useState(false);
-  const [showResultTip, setShowResultTip] = useState(""); // "hit" or "miss" or ""
+  const [showResultTip, setShowResultTip] = useState("");
   const canvasRef = useRef(null);
   const { user, login } = useAuth();
   const prizeImagesRef = useRef([]);
@@ -97,7 +97,7 @@ export default function Game7Canvas() {
       setDisplayScore(prev => {
         if (prev === score) return prev;
         const diff = score - prev;
-        const step = Math[diff > 0 ? "ceil" : "floor"](prev + diff * 0.025);  // 進度條增長速度 0.025
+        const step = Math[diff > 0 ? "ceil" : "floor"](prev + diff * 0.025);  // 進度條增長速度
         if (Math.abs(diff) < 2) return score;
         return step;
       });
@@ -197,22 +197,22 @@ export default function Game7Canvas() {
       const maxCircleR = 35;
       const maxFontSize = 30; 
       const circleR = Math.min(18 * scaleW, maxCircleR);
-      const circleX = Math.min(50 * scaleW, 30) + circleR; // 左側內距 + 半徑
-      const circleY = Math.min(50 * scaleH, 25) + circleR; // 上側內距 + 半徑
+      const circleX = Math.min(50 * scaleW, 30) + circleR; // 內距 + 半徑
+      const circleY = Math.min(50 * scaleH, 25) + circleR; 
       const fontSize = Math.min(16 * scaleW, maxFontSize);
 
       // 進度條
       const barGap = -circleR;
       const barX = circleX + circleR + barGap;
-      const maxBarWidth = 280; // 進度條最大寬度
-      const maxBarHeight = 20; // 進度條最大高度
+      const maxBarWidth = 280; 
+      const maxBarHeight = 20; 
       const barWidth = Math.min(140 * scaleW, maxBarWidth);
       const scoreBarHeight =  Math.min(9 * scaleW, maxBarHeight);
       const maxScore = 100 * MAX_SHOTS;
       const barY = circleY - scoreBarHeight/2; 
       const percent = Math.min(displayScore / maxScore, 1);
 
-      // 進度條底
+      // 進度條(底)
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.fillStyle = "#F5F0E4";
@@ -248,7 +248,7 @@ export default function Game7Canvas() {
       ctx.fillStyle = displayScore >= sScore ? "#C5AC6B" : "#bbb";
       ctx.fillText("S", barX + barWidth * 1.0, labelY);
 
-      // 畫圓
+      // "得分" 圓形
       ctx.save();
       ctx.beginPath();
       ctx.arc(circleX, circleY, circleR, 0, 2 * Math.PI);
@@ -260,7 +260,7 @@ export default function Game7Canvas() {
       ctx.globalAlpha = 1;
       ctx.stroke();
 
-      // 畫文字
+      // "得分" 文字
       ctx.font = ` ${fontSize}px sans-serif`;
       ctx.fillStyle = "#fff";
       ctx.textAlign = "center";
@@ -449,6 +449,7 @@ export default function Game7Canvas() {
     }
   }, [stage, shotsLeft, qteStep, qteX, qteY, hits, canvasSize]);
 
+  // 鍵盤事件
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -495,7 +496,7 @@ export default function Game7Canvas() {
     localStorage.removeItem("game7Success");
   };
 
-  // 載入中
+  // 圖片載入中
   if (!imagesLoaded) {
     return (
       <div style={{textAlign: "center", padding: 48, fontSize: 24}}>
@@ -504,6 +505,7 @@ export default function Game7Canvas() {
     );
   }
 
+  // 畫面
   return (
     <>
       {/* 遊戲說明 */}
@@ -511,7 +513,7 @@ export default function Game7Canvas() {
         <div style={{ textAlign: "center", padding: 32 }}>
           <h2>百發百中</h2>
           <ol style={{
-            textAlign: "left",  // 文字靠左
+            textAlign: "left", 
             maxWidth: 400,
             margin: "0 auto",  // 區塊置中
             display: "block",
@@ -550,7 +552,7 @@ export default function Game7Canvas() {
         }}>
           <div style={{
             background: "#fff", borderRadius: 16, padding: 32, minWidth: 260, textAlign: "center",
-            boxShadow: "0 4px 32px rgba(0,0,0,0.18)"
+            boxShadow: "0 4px 32px rgba(0,0,0,0.18)", color: "#505166"
           }}>
             <h2>第 {Math.min(currentRound, MAX_SHOTS)} 回射擊</h2>
             <button
