@@ -3,6 +3,22 @@
 import React from 'react';
 import Link from 'next/link';
 
+// 載入圖片
+const iconMap = {
+  game1: '/menu/gameIcon1.png',
+  game2: '/menu/gameIcon2.png',
+  game3: '/menu/gameIcon3.png',
+  game4: '/menu/gameIcon4.png',
+  game5: '/menu/gameIcon5.png',
+  game6: '/menu/gameIcon6.png',
+  game7: '/menu/gameIcon7.png',
+  game8: '/menu/gameIcon8.png',
+  game9: '/menu/gameIcon9.png',
+  game10: '/menu/gameIcon10.png',
+  game11: '/menu/gameIcon11.png',
+  Home: '/menu/homeIcon.png',
+};
+
 const menuItems = [
   { label: 'game1', href: '/game1' },
   { label: 'game2', href: '/game2' },
@@ -26,7 +42,7 @@ export default function Menu() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#fff',
+        background: 'transparent',
         marginTop: 120,
         marginBottom: 140,
         border: '3px solid #C5AC6B',
@@ -51,17 +67,31 @@ export default function Menu() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#fff',
-              border: '2px solid #C5AC6B',
-              borderRadius: '16px',
+              background: 'transparent',
+              //border: '2px solid #C5AC6B', 
+              borderRadius: '16px', 
               color:'#C5AC6B',
               fontSize: '1.5rem',
               fontWeight: 'bold',
               textDecoration: 'none',
               height: '100%',
               transition: 'background 0.2s',
+              padding: 0,
             }}>
-              {item.label}
+              <img
+                src={iconMap[item.label]}
+                alt={item.label}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  borderRadius: '16px', 
+                  objectFit: 'contain',
+                  display: 'block',
+                  margin: '0 auto',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                }}
+              />
             </Link>
           ))}
         </div>
@@ -71,14 +101,14 @@ export default function Menu() {
           height: 8px;
         }
         .menu-scroll::-webkit-scrollbar-thumb {
-          background: rgba(197, 172, 107, 0.5); /* #C5AC6B, 50% 透明度 */
+          background: rgba(197, 172, 107, 0.5);
           border-radius: 6px;
           transition: background 0.2s;
         }
         .menu-scroll:hover::-webkit-scrollbar-thumb,
         .menu-scroll:active::-webkit-scrollbar-thumb,
         .menu-scroll:focus::-webkit-scrollbar-thumb {
-          background: rgba(197, 172, 107, 0.10); /* #C5AC6B, 25% 透明度 */
+          background: rgba(197, 172, 107, 0.10);
         }
         .menu-scroll::-webkit-scrollbar-track {
           background: transparent;
@@ -105,4 +135,4 @@ export default function Menu() {
       `}</style>
     </div>
   );
-} 
+}

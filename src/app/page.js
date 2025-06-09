@@ -19,7 +19,31 @@ export default function Home() {
       boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
       position: 'relative',
     }}>
-      <h1 style={{ color: '#C5AC6B', fontSize: 32, fontWeight: 700 }}>Home Page</h1>
+      <div
+        style={{
+          width: 280,
+          height: 154,
+          borderRadius: 32,
+          overflow: 'hidden',
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#fff',
+        }}
+      >
+        <img
+          src="/menu/homeIcon.png"
+          alt="Home Icon"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block',
+          }}
+        />
+      </div>
+      {/*<h1 style={{ color: '#C5AC6B', fontSize: 32, fontWeight: 700, marginTop: 24 }}>Home Page</h1>*/}
       <button
         style={{
           marginTop: 40,
@@ -31,11 +55,11 @@ export default function Home() {
           border: 'none',
           borderRadius: 12,
           cursor: 'pointer',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-        }}
-        onClick={() => router.push('/menu')}
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+      }}
+      onClick={() => router.push('/menu')}
       >
-        Start
+        進入
       </button>
     </div>
   );
