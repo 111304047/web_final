@@ -11,22 +11,23 @@ export default function GestureCanvas() {
   const canvasRef = useRef(null);
   const { user, login } = useAuth();
 
-  // 只做 localStorage check，但不立即跳成功視窗
+  // 初始檢查 localStorage 是否曾成功召喚過
   useEffect(() => {
     const hasCleared = localStorage.getItem("summonSuccess") === "true";
     if (hasCleared) {
-      setSuccess(false); // 不自動切換到成功畫面
+      setSuccess(false); // 不顯示成功畫面
       setShowOverlay(false);
     }
   }, []);
 
+  // 當 path 更新時，重新繪製畫布
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineWidth = 4;
-    ctx.strokeStyle = "#4B2E05"; 
+    ctx.strokeStyle = "#4B2E05";
     ctx.beginPath();
     path.forEach((point, index) => {
       if (index === 0) {
@@ -56,13 +57,14 @@ export default function GestureCanvas() {
 
   const handleMouseUp = async () => {
     setIsDrawing(false);
-    const result = isStraightLine(path);
+    const result = isStarShape(path);
     console.log("判斷結果：", result);
     if (result) {
       localStorage.setItem("summonSuccess", "true");
       setSuccess(true);
       setShowOverlay(true);
-      // SCORE +1 並同步到 DB
+
+      // 更新使用者分數
       if (user && user.username) {
         const newScore = (user.score || 0) + 1;
         try {
@@ -99,7 +101,7 @@ export default function GestureCanvas() {
         overflow: "hidden",
       }}
     >
-      {/* 中央畫布 */}
+      {/* 中央畫布區域 */}
       <div
         style={{
           position: "absolute",
@@ -110,7 +112,7 @@ export default function GestureCanvas() {
           borderRadius: "12px",
           boxShadow: "0 0 20px rgba(0,0,0,0.2)",
           width: "300px",
-          height: "300px", // 高度改為 300px
+          height: "300px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -130,20 +132,22 @@ export default function GestureCanvas() {
         />
       </div>
 
-      {/* 成功召喚後彈窗 */}
+      {/* 成功召喚後的彈窗 */}
       {showOverlay && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          background: "rgba(0,0,0,0.25)",
-          zIndex: 99999,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.25)",
+            zIndex: 99999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <div
             style={{
               width: "350px",
@@ -160,7 +164,15 @@ export default function GestureCanvas() {
               boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
             }}
           >
-            <h2 style={{ color: "#505166", fontSize: 22, fontWeight: 700, marginBottom: 18, textAlign: "center" }}>
+            <h2
+              style={{
+                color: "#505166",
+                fontSize: 22,
+                fontWeight: 700,
+                marginBottom: 18,
+                textAlign: "center",
+              }}
+            >
               Success！
             </h2>
             <div style={{ display: "flex", gap: 16 }}>
@@ -212,25 +224,47 @@ export default function GestureCanvas() {
   );
 }
 
-// 判斷直線演算法
-function isStraightLine(points) {
-  if (points.length < 5) return false;
-  const p0 = points[0];
-  const p1 = points[points.length - 1];
-  const dx = p1.x - p0.x;
-  const dy = p1.y - p0.y;
-  const lineLength = Math.sqrt(dx * dx + dy * dy);
-  if (lineLength < 50) return false;
+function isStarShape(points) {
+  if (points.length < 15) return false;
 
-  let totalDeviation = 0;
-  for (let i = 1; i < points.length - 1; i++) {
-    const px = points[i].x;
-    const py = points[i].y;
-    const distance =
-      Math.abs(dy * px - dx * py + p1.x * p0.y - p1.y * p0.x) / lineLength;
-    totalDeviation += distance;
+  const start = points[0];
+  const end = points[points.length - 1];
+  const distToStart = Math.hypot(end.x - start.x, end.y - start.y);
+  if (distToStart > 80) return false;
+
+  let totalLength = 0;
+  let totalAngleChange = 0;
+  for (let i = 2; i < points.length; i++) {
+    const p0 = points[i - 2];
+    const p1 = points[i - 1];
+    const p2 = points[i];
+
+    const dx1 = p1.x - p0.x;
+    const dy1 = p1.y - p0.y;
+    const dx2 = p2.x - p1.x;
+    const dy2 = p2.y - p1.y;
+
+    const len1 = Math.hypot(dx1, dy1);
+    const len2 = Math.hypot(dx2, dy2);
+    totalLength += len1;
+
+    if (len1 > 0 && len2 > 0) {
+      const dot = dx1 * dx2 + dy1 * dy2;
+      const cosTheta = dot / (len1 * len2);
+      const angle = Math.acos(Math.min(1, Math.max(-1, cosTheta)));
+      totalAngleChange += angle;
+    }
   }
-  const avgDeviation = totalDeviation / points.length;
-  console.log("平均偏差：", avgDeviation);
-  return avgDeviation < 15;
+
+  const avgAngleChange = totalAngleChange / points.length;
+
+  console.log("總長度：", totalLength.toFixed(1));
+  console.log("平均角度變化：", avgAngleChange.toFixed(2));
+  console.log("回到起點距離：", distToStart.toFixed(1));
+
+  return (
+    totalLength > 600 && // 大致繞一圈即可
+    distToStart < 80 &&  // 起點終點接近
+    avgAngleChange > 0.12 // 有幾個尖角
+  );
 }

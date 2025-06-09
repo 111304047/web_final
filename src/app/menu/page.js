@@ -21,14 +21,14 @@ const menuItems = [
 export default function Menu() {
   return (
     <div style={{
-        minHeight: 'calc(100vh - 160px)', // 預留上方空間與下方 bar
+        minHeight: 'calc(100vh - 160px)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         background: '#fff',
-        marginTop: 120, // 預留更高的上方空間
-        marginBottom: 140, // 下方空間縮小，內容往上移動
+        marginTop: 120,
+        marginBottom: 140,
         border: '3px solid #C5AC6B',
         boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
         position: 'relative',
@@ -43,7 +43,7 @@ export default function Menu() {
           gridTemplateColumns: 'repeat(6, 1fr)',
           gridTemplateRows: 'repeat(2, 150px)',
           gap: '24px',
-          width: '1800px', // 讓grid比螢幕寬
+          width: '1800px',
           margin: '0 auto',
         }}>
           {menuItems.map((item, idx) => (
@@ -51,7 +51,7 @@ export default function Menu() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#fff', // 改成白色
+              background: '#fff',
               border: '2px solid #C5AC6B',
               borderRadius: '16px',
               color:'#C5AC6B',

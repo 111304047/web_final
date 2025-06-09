@@ -1,3 +1,4 @@
+
 # Gudgame Project 🎮✨
 
 本專案為多人協作的 Next.js 遊戲平台，每位同學需負責一個 `game`，並於指定資料夾內開發與修改對應的頁面與 JS 檔案。
@@ -110,6 +111,43 @@ export default function App() {
 ```js
 <div style={{ backgroundImage: 'url(/cat.png)' }} />
 ```
+
+---
+
+## 🔀 如何使用 GitHub Desktop 開 branch 與更新專案
+
+### 1️⃣ 建立分支（Branch）
+
+1. 請先在 GitHub Desktop 中開啟本專案。
+2. 點選左上角的「Current Branch」按鈕。
+3. 選擇「New Branch」。 
+4. 輸入分支名稱。
+5. 按下「Create Branch」完成建立。
+
+### 2️⃣ 同步遠端資料（Pull）
+
+1. 確保目前位於正確的 branch。
+2. 點選「Fetch origin」。
+3. 若有更新，點選「Pull origin」以下載最新的遠端資料，避免衝突。
+
+### 3️⃣ 進行開發與提交（Commit）
+
+1. 在本地進行修改（如 `page.js`、`components/gameN.js`）。
+2. 回到 GitHub Desktop，檢查「Changes」頁籤，確認要提交的檔案。
+3. 填寫 Commit 訊息（例如：`feat: 完成 gameN 初版`）。
+4. 按下「Commit to [branch name]」。
+
+### 4️⃣ 推送至遠端（Push）
+
+1. Commit 完成後，按下「Push origin」。
+2. 這樣就把你在本地的修改同步到 GitHub 遠端囉。
+
+### 5️⃣ 提交 Pull Request（PR）
+
+1. 前往 GitHub 網頁版，切換到你剛建立的 branch。
+2. 點選「New Pull Request」。 
+3. 記得檢查 PR 的目標分支是否正確（通常是 `main` 或 `develop`）。
+4. 輸入 PR 標題與說明後送出，等候審核與合併。
 
 ---
 
