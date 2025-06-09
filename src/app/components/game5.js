@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import "./game5.css";
+import { useAuth } from "../AuthContext";
 
 export default function Game5Canvas() {
   const [holes, setHoles] = useState(Array(8).fill({ state: "empty", timer: 0 }));
@@ -11,6 +12,7 @@ export default function Game5Canvas() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [success, setSuccess] = useState(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const { user, login } = useAuth();
 
   const popSound = useRef(null);
   const cookSound = useRef(null);
@@ -53,11 +55,45 @@ export default function Game5Canvas() {
     if (cookSound.current) cookSound.current.volume = 0.8;
   }, []);
 
+  // 當過關時呼叫此函式
+  async function handleSuccess() {
+    localStorage.setItem("game2Success", "true");
+    setSuccess(true);
+    setShowOverlay(true);
+    // SCORE +1 並同步到 DB
+    if (user && user.username) {
+      const newScore = (user.score || 0) + 1;
+      try {
+        const res = await fetch("/api/auth", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: user.username, score: newScore }),
+        });
+        if (res.ok) {
+          login({ ...user, score: newScore });
+        } else {
+          console.error("Failed to update score");
+        }
+      } catch (err) {
+        console.error("Error updating score:", err);
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (success) {
+      handleSuccess();
+    }
+  }, [success]);
+  
+
   // 倒數計時與難度提升
   useEffect(() => {
     if (timer <= 0) {
       setShowOverlay(true);
-      if (goodScore >= 50) setSuccess(true);
+      if (goodScore >= 50) {
+        setSuccess(true); // 這會觸發上面的 useEffect 去呼叫 handleSuccess
+      }
       return;
     }
     const countdown = setInterval(() => {
@@ -117,6 +153,7 @@ export default function Game5Canvas() {
   };
 
   const getHoleClass = (state) => `takoyaki-hole ${state}`;
+
 
   return (
     <div className="game-wrapper">
