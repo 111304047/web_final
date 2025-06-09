@@ -33,7 +33,7 @@ export default function Home() {
         }}
       >
         <img
-          src="/menu/homeIcon.png"
+          src="/menu/home.png"
           alt="Home Icon"
           style={{
             width: '100%',
