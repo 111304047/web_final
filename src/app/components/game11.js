@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../AuthContext";
+import { Flow_Rounded } from "next/font/google";
 
 export default function Game11Canvas() {
   // 狀態宣告與用途說明
@@ -12,6 +13,7 @@ export default function Game11Canvas() {
   const [showStart, setShowStart] = useState(false); // 是否顯示 Start 文字
   const [progress, setProgress] = useState(100); // 進度條百分比
   const [isReadyToHit, setIsReadyToHit] = useState(false); // 是否準備好點擊
+  const [showStick, setShowStick] = useState(false);
   const lastHitTimeRef = useRef(0);
   const { user, login } = useAuth();
   const brick1Ref = useRef(null);
@@ -51,60 +53,68 @@ export default function Game11Canvas() {
             clearInterval(progressIntervalRef.current);
             return 0;
           }
-          return prev - 2;
+          return prev - 3;
         });
-      }, 20);
+      }, 10);
     }
     return () => clearInterval(progressIntervalRef.current);
   }, [countdown, showStart]);
 
-  // 監控進度條歸零，0.5 秒內未點擊則判定失敗並顯示彈窗
+  // 監控進度條歸零，1.5 秒內未點擊則判定失敗並顯示彈窗
   useEffect(() => {
     if (progress === 0 && !success && !failed) {
-      lastHitTimeRef.current = Date.now(); // 紀錄進度條歸零的時間
+      lastHitTimeRef.current = Date.now(); // 記錄時間
       const timer = setTimeout(() => {
-        if (!success) {
+        if (!success && !failed) {
           setFailed(true);
           setShowOverlay(true);
         }
-      }, 2000);
+      }, 1500); // 超過 1.5 秒未點擊，直接失敗
       return () => clearTimeout(timer);
     }
   }, [progress, success, failed]);
 
-  // handleHit 函式從 useEffect 中提取出來，作為元件內部的獨立函式
+  // handleHit 函式，依據點擊時機判斷成功、失敗、提前點擊等
   function handleHit() {
-    if (showStart || countdown > 0) return;
+    if (showStart || countdown > 0 || success || failed) return;
+    setShowStick(true);
+    setTimeout(() => setShowStick(false), 600); // 播放一次
     const now = Date.now();
-    if (!success && !failed) {
-      if (progress > 0) {
-        setFailed(true);
+
+    const isEarlyClick = progress > 0;
+    const isClickTooLate = progress === 0 && now - lastHitTimeRef.current > 1500;
+    const isClickSuccess = progress === 0 && now - lastHitTimeRef.current <= 200;
+    const isClickFailWithAnim = progress === 0 && now - lastHitTimeRef.current > 200 && now - lastHitTimeRef.current <= 1500;
+
+    if (isEarlyClick) {
+      lastHitTimeRef.current = Date.now();
+      setFailed(true);
+      setIsReadyToHit(false);
+      clearInterval(progressIntervalRef.current);
+      setTimeout(() => {
         setShowOverlay(true);
-        clearInterval(progressIntervalRef.current);
-        return;
-      } else {
-        const delta = now - lastHitTimeRef.current;
-        if (delta <= 250) {
-          handleSuccess();
-        } else if (delta <= 1500) {
-          // 有動畫的失敗（磚塊左移，塔向右倒）
-          setFailed(true);
-          setIsReadyToHit(false);
-          setTimeout(() => {
-            setShowOverlay(true);
-          }, 600);
-        } else {
-          // 超過 1.5 秒未點擊，無動畫失敗
-          setFailed(true);
-          setShowOverlay(true);
-        }
-      }
+      }, 600);
+      return;
+    }
+
+    if (isClickSuccess) {
+      handleSuccess();
+    } else if (isClickFailWithAnim) {
+      setFailed(true);
+      setIsReadyToHit(false);
+      setTimeout(() => {
+        setShowOverlay(true);
+      }, 600);
+    } else if (isClickTooLate) {
+      setFailed(true);
+      setShowOverlay(true);
     }
   }
 
   // 監聽鍵盤空白鍵與點擊事件，處理點擊行為判斷
   useEffect(() => {
     function onKeyDown(e) {
+      if (showOverlay) return;
       if (e.code === "Space") {
         e.preventDefault();
         handleHit();
@@ -121,17 +131,16 @@ export default function Game11Canvas() {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("click", onClick);
     };
-  }, [progress, success, failed, showStart, countdown]);
+  }, [progress, success, failed, showStart, countdown, showOverlay]);
 
   // 過關行為與分數更新流程
   // 1. 設定 localStorage 過關標記
-  // 2. 更新成功狀態與取消準備點擊狀態
+  // 2. 更新成功狀態與顯示彈窗
   // 3. 若使用者登入，將分數 +1 並同步更新到後端資料庫
   async function handleSuccess() {
     localStorage.setItem("game11Success", "true");
     setSuccess(true);
-    setIsReadyToHit(false);
-    // setShowOverlay(true); // 延後顯示彈窗，移除這一行
+    setShowOverlay(true);
     // SCORE +1 並同步到 DB
     if (user && user.username) {
       const newScore = (user.score || 0) + 1;
@@ -156,14 +165,27 @@ export default function Game11Canvas() {
   useEffect(() => {
     if (success) {
       const timer = setTimeout(() => {
-        setShowOverlay(true);
+        // setShowOverlay(true); // 已在 handleSuccess 內處理
       }, 600); // 確保動畫結束後再顯示
       return () => clearTimeout(timer);
     }
   }, [success]);
 
+  // ====== 修正動畫 style 錯誤 ======
+  const shouldFallWithAnimation =
+    failed && (
+      progress > 0 ||
+      (progress === 0 && Date.now() - lastHitTimeRef.current <= 1500)
+    );
+  const towerAnimation = success
+    ? 'none'
+    : shouldFallWithAnimation
+    ? 'dropDown 0.2s forwards, tiltTo30 0.1s forwards 0.2s, fallTo90 0.25s forwards 0.3s'
+    : 'none';
+
   return (
-    <div style={{ width: '100%', height: '100%', backgroundColor: '#222222', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', backgroundColor: '#222222', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}>
+      
       {/* 倒數遮罩 */}
       {(countdown > 0 || (countdown === 0 && showStart)) && (
         <div style={{
@@ -229,7 +251,17 @@ export default function Game11Canvas() {
       />
       
       {/* 中央區域：達摩塔與棍棒 */}
-      <div style={{ flexGrow: 1, position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'flex-end', marginBottom: 10, zIndex: 1 }}>
+      <div style={{ 
+        flexGrow: 1, 
+        position: 'relative', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'flex-end', 
+        marginBottom: 10, 
+        zIndex: 1,
+        overflow: 'hidden',
+        maxWidth: '100%',
+      }}>
         <div
           style={{
             display: 'flex',
@@ -243,12 +275,9 @@ export default function Game11Canvas() {
               flexDirection: 'column',
               justifyContent: 'flex-end',
               transition: 'transform 0.25s ease',
-              transform:
-                success
-                  ? 'translateY(10vh)'
-                  : failed && progress <= 0 && Date.now() - lastHitTimeRef.current <= 1500
-                  ? 'rotate(35deg) translateY(85px)'
-                  : 'translateY(0)',
+              animation: towerAnimation,
+              transform: success ? 'translateY(10vh)' : 'translateY(0)',
+              transformOrigin: 'bottom right',
             }}
           >
             <div><img src="/daruma.png" alt="daruma" style={{ width: '25vh', height: '17.5vh' }} /></div>
@@ -263,11 +292,10 @@ export default function Game11Canvas() {
               width: '25vh', 
               height: '10vh', 
               transition: 'transform 0.1s ease',
-              transform: (progress === 0 && success)
-                ? 'translateX(-18vw)'
-                : (progress === 0 && failed && Date.now() - lastHitTimeRef.current <= 1500)
-                ? 'translateX(-18vw)'
-                : 'translateY(0)',
+              transform: (
+                (progress === 0 && success) ||
+                (failed && (progress > 0 || Date.now() - lastHitTimeRef.current <= 1500))
+              ) ? 'translateX(calc(-25vh - 2vw))' : 'translateY(0)',
               cursor: 'pointer',
               userSelect: 'none',
             }}
@@ -276,23 +304,27 @@ export default function Game11Canvas() {
           </div>
         </div>
         {/* 棍棒圖像，從右側揮向達摩塔，擺在塔的下方右側，稍微傾斜 */}
-        <img 
-          src="/stick.png" 
-          alt="stick" 
-          style={{ 
-            position: 'absolute', 
-            right: 'calc(50% - 400px)', 
-            width: '30vh', 
-            height: '10vh', 
-            transformOrigin: 'right center',
+        <img
+          key={showStick ? `swing-${Date.now()}` : 'static'}
+          src="/stick.png"
+          alt="stick_static"
+          className={showStick ? 'swingStick' : ''}
+          style={{
+            position: 'absolute',
+            rotate:'10deg',
+            right: 'calc(50% - 17vw)',
+            bottom: '4%',
+            width: '30vh',
+            height: '10vh',
             userSelect: 'none',
             pointerEvents: 'none',
-          }} 
+            zIndex: 2,
+          }}
         />
       </div>
 
       {/* 下方進度條 */}
-      <div style={{ height: '2vh', backgroundColor: 'rgba(245, 240, 228, 0.9)', margin: '0 24px 16px', borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ height: '2vh', backgroundColor: 'rgba(245, 240, 228, 0.9)', margin: '0 24px 16px', borderRadius:'30px' , overflow: 'hidden' }}>
         <div style={{ width: progress + '%', height: '100%', backgroundColor: '#E36B5B' }}></div>
       </div>
 
@@ -312,13 +344,15 @@ export default function Game11Canvas() {
         }}>
           <div
             style={{
-              width: "350px",
-              height: "200px",
+              width: "20vw",
+              height: "12.5vw",
+              minWidth: "150px",
+              minHeight: "100px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
               alignItems: "center",
-              padding: "1.5rem",
+              padding: "2rem",
               border: "3px solid #C5AC6B",
               color: "#C5AC6B",
               background: "#fff",
@@ -326,9 +360,21 @@ export default function Game11Canvas() {
               boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
             }}
           >
-            <h2 style={{ color: "#505166", fontSize: 22, fontWeight: 700, marginBottom: 18, textAlign: "center" }}>
-              {success ? 'Success！' : 'Failed！'}
-            </h2>
+            {success ? (
+              <>
+                <img src="/daruma.png" alt="success_daruma" style={{ width: '5vw', height: 'auto', marginBottom: '0.8vw', minWidth: "64px" }} />
+                <h2 style={{ color: "#505166", fontSize: "clamp(16px, 1.8vw, 24px)", fontWeight: 700, marginBottom: 18, textAlign: "center", minWidth: "120px" }}>
+                  挑戰成功
+                </h2>
+              </>
+            ) : (
+              <>
+                <img src="/daruma.png" alt="fail_daruma" style={{ width: '5vw', height: 'auto', marginBottom: '0.8vw', transform: 'rotate(180deg)', minWidth: "64px" }} />
+                <h2 style={{ color: "#505166", fontSize: "clamp(16px, 1.8vw, 24px)", fontWeight: 700, marginBottom: 18, textAlign: "center", minWidth: "120px", minWidth: '1vw' }}>
+                  挑戰失敗
+                </h2>
+              </>
+            )}
             <div style={{ display: "flex", gap: 16 }}>
               <button
                 onClick={() => {
@@ -343,36 +389,50 @@ export default function Game11Canvas() {
                   // TODO: 這裡也要重置你自己的遊戲狀態
                 }}
                 style={{
-                  padding: "8px 24px",
-                  color: "#fff",
-                  background: "#E36B5B",
-                  border: "none",
-                  borderRadius: 8,
+                  aspectRatio: '2 / 1',
+                  minWidth: '80px',
+                  minHeight: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  background: '#E36B5B',
+                  border: 'none',
+                  borderRadius: '0.5vw',
                   fontWeight: 600,
-                  fontSize: 16,
-                  cursor: "pointer",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  fontSize: 'clamp(14px, 1.2vw, 18px)',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  maxWidth: '10vw',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                Again
+                再玩一次
               </button>
               <button
                 onClick={() => {
                   window.location.href = "/";
                 }}
                 style={{
-                  padding: "8px 24px",
-                  color: "#fff",
-                  background: "#505166",
-                  border: "none",
-                  borderRadius: 8,
+                  aspectRatio: '2 / 1',
+                  minWidth: '80px',
+                  minHeight: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  background: '#505166',
+                  border: 'none',
+                  borderRadius: '0.5vw',
                   fontWeight: 600,
-                  fontSize: 16,
-                  cursor: "pointer",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  fontSize: 'clamp(14px, 1.2vw, 18px)',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  maxWidth: '10vw',
+                  whiteSpace: 'nowrap'
                 }}
               >
-                Back
+                回到主頁
               </button>
             </div>
           </div>
@@ -380,6 +440,10 @@ export default function Game11Canvas() {
       )}
       {/* 縮放動畫 CSS */}
       <style>{`
+        @keyframes dropDown {
+          0% { transform: translateY(0) rotate(0deg); }
+          100% { transform: translateY(10vh) rotate(0deg); }
+        }
         @keyframes scaleUp {
           0% { transform: translate(-50%, -50%) scale(1); }
           50% { transform: translate(-50%, -50%) scale(1.2); }
@@ -408,7 +472,27 @@ export default function Game11Canvas() {
           -webkit-text-stroke: 10px #F5F0E4;
           text-stroke: 10px #F5F0E4;
         }
+
+        @keyframes swing {
+          0% {
+            transform: rotateX(-8deg) rotateZ(10deg) rotateY(4deg);
+          }
+          100% {
+            transform: rotateX(12deg) rotateZ(-20deg) rotateY(-5deg);
+          }
+        }
+
+        .swingStick {
+          transform-origin: right center;
+          animation: swing 0.03s ease-out forwards;
+        }
+
+        @keyframes fallTo90 {
+          0% { transform: translateY(10vh) rotate(0deg); }
+          50% { transform: translateY(10vh) rotate(30deg); }
+          100% { transform: translateY(10vh) rotate(90deg); }
+        }
       `}</style>
     </div>
   );
-}
+} 
