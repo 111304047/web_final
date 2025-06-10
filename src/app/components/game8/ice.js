@@ -3,7 +3,6 @@ export default function Ice({ components }) {
         <div
             style={{
                 width: "100%",
-                
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
@@ -15,8 +14,8 @@ export default function Ice({ components }) {
                 src="./game8/ice.svg"
                 alt="ice"
                 style={{
-                    width: "40%",
-                    height: "40%",
+                    width: "25%",
+                    height: "25%",
                     objectFit: "contain",
                     position: "absolute",
                 }}

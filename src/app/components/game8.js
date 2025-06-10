@@ -7,35 +7,40 @@ import Order from "./game8/order.js";
 import Timer from "./game8/timer.js";
 import Coin from "./game8/coin.js";
 import Ice from "./game8/ice.js";
+import Flytopping from "./game8/flytopping.js";
+import Wall from "./game8/wall.js";
 
 export default function Game8Canvas() {
   const toppings = [
-    {name: "red", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
-    {name: "yellow", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
-    {name: "green", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
-    {name: "blue", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
-    {name: "chocolate", top: "45%", left: "51%", scale: "27.5%", zIndex: 2},
-    {name: "strawberry", top: "57.5%", left: "50%", scale: "40%", zIndex: 3},
-    {name: "watermelon", top: "57.5%", left: "50%", scale: "40%", zIndex: 3},
-    {name: "pudding", top: "32%", left: "50%", scale: "12%", zIndex: 3},
-    {name: "cherry", top: "30%", left: "50%", scale: "12%", zIndex: 3},
-    {name: "takoyaki", top: "32%", left: "50%", scale: "20%", zIndex: 3},
-    {name: "fishcake", top: "32%", left: "51%", scale: "17%", zIndex: 3},
-    {name: "shrimp", top: "54.5%", left: "50.5%", scale: "40%", zIndex: 3},
-    {name: "fishplate", top: "57.5%", left: "50%", scale: "40%", zIndex: 3},
-  ]
+    { name: "red", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
+    { name: "yellow", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
+    { name: "green", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
+    { name: "blue", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
+    { name: "chocolate", top: "47%", left: "50%", scale: "18%", zIndex: 2 },
+    { name: "strawberry", top: "55%", left: "50%", scale: "25%", zIndex: 3 },
+    { name: "watermelon", top: "55%", left: "50%", scale: "25%", zIndex: 3 },
+    { name: "pudding", top: "39%", left: "50%", scale: "8%", zIndex: 3 },
+    { name: "cherry", top: "37%", left: "50%", scale: "7%", zIndex: 3 },
+    { name: "takoyaki", top: "37.5%", left: "50%", scale: "14%", zIndex: 3 },
+    { name: "fishcake", top: "37%", left: "50%", scale: "14%", zIndex: 3 },
+    { name: "shrimp", top: "52%", left: "50.5%", scale: "26.5%", zIndex: 3 },
+    { name: "fishplate", top: "54.5%", left: "50%", scale: "26%", zIndex: 3 },
+  ];
+
+  const entryDirections = ["left", "right", "top", "bottom"];
 
   const [order, setOrder] = useState([]);
   const [ice, setIce] = useState([]);
   const [coin, setCoin] = useState(0);
 
+  const [moveWall, setMoveWall] = useState("top");
+  const [flytopping, setFlytopping] = useState(null);
+  const [show, setShow] = useState(true);
+  const [flyDir, setFlyDir] = useState("top");
+
   const [success, setSuccess] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const { user, login } = useAuth();
-
-  useEffect(() => {
-    setOrder(generateOrder());
-  }, []);
 
   useEffect(() => {
     const hasCleared = localStorage.getItem("game2Success") === "true";
@@ -44,6 +49,53 @@ export default function Game8Canvas() {
       setShowOverlay(false);
     }
   }, []);
+
+  // 產生訂單
+  useEffect(() => {
+    setOrder(generateOrder());
+  }, []);
+
+  // 飛入配料
+  useEffect(() => {
+    if (show) {
+      const index = Math.floor(Math.random() * toppings.length);
+      const selectedTopping = toppings[index];
+      setFlytopping(selectedTopping);
+    }
+    console.log("Fly updated:", show);
+  }, [show]);
+
+  //飛入方向
+  useEffect(() => {
+    setFlyDir(flydirection());
+  }, [show]);
+
+  // 偵測鍵盤事件
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      switch (e.key) {
+        case "ArrowUp":
+          setMoveWall("top");
+          break;
+        case "ArrowDown":
+          setMoveWall("bottom");
+          break;
+        case "ArrowLeft":
+          setMoveWall("left");
+          break;
+        case "ArrowRight":
+          setMoveWall("right");
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  });
 
   // update order
   function generateOrder() {
@@ -54,13 +106,71 @@ export default function Game8Canvas() {
     return [toppings[toppings1], toppings[toppings2], toppings[toppings3]];
   }
 
+  // fly direction
+  function flydirection() {
+    return entryDirections[Math.floor(Math.random() * entryDirections.length)];
+  }
+
+  // update ice toppings
+  function updateIce() {
+    if (flyDir == moveWall)
+      return;
+
+    if (ice.length == 0) {
+      setIce([flytopping]);
+      return;
+    }
+
+    let updated = false;
+    const newIce = ice.map((e) => {
+      const i = toppings.findIndex((o) => o.name === e.name);
+      const ti = toppings.findIndex((o) => o.name === flytopping.name);
+
+      if (
+        (i < 4 && ti < 4) ||
+        (i >= 7 && i <= 10 && ti >= 7 && ti <= 10) ||
+        ((i === 5 || i === 12) && (ti === 5 || ti === 12)) ||
+        ((i === 6 || i === 11) && (ti === 6 || ti === 11))
+      ) {
+        updated = true;
+        return flytopping;
+      }
+
+      return e;
+    });
+
+    if (!updated) {
+      newIce.push(flytopping);
+    }
+    setIce(newIce);
+    console.log("Ice updated:", newIce);
+  }
+
+  // count coin
+  function chekeIce() {
+    let delta = 0;
+    ice.forEach(e => {
+      if (order.find((o) => o.name === e.name)) {
+        delta += 30;
+      }
+      else if (toppings.findIndex(o => o.name == e.name) > 8) {
+        delta -= 20;
+      }
+      else {
+        delta -= 5;
+      }
+    });
+
+    setCoin(prev => prev + delta);
+  }
+
   // 當過關時呼叫此函式
-  async function handleSuccess() {
+  async function handleSuccess(b) {
     localStorage.setItem("game2Success", "true");
-    setSuccess(true);
+    setSuccess(b);
     setShowOverlay(true);
     // SCORE +1 並同步到 DB
-    if (user && user.username) {
+    if (user && user.username && b) {
       const newScore = (user.score || 0) + 1;
       try {
         const res = await fetch("/api/auth", {
@@ -81,22 +191,6 @@ export default function Game8Canvas() {
 
   return (
     <>
-      {/* 這裡放你的遊戲元件或互動內容，預設只留一個模擬過關按鈕 */}
-      {/* <button
-        onClick={handleSuccess}
-        style={{
-          padding: "12px 32px",
-          fontSize: 20,
-          borderRadius: 8,
-          background: "#C5AC6B",
-          color: "#fff",
-          border: "none",
-          cursor: "pointer",
-        }}
-      >
-        模擬過關8（請改成你自己的過關條件）
-      </button> */}
-
       {/* order list*/}
       <div
         style={{
@@ -127,9 +221,30 @@ export default function Game8Canvas() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          position: "relative",
         }}>
 
         <Ice components={ice} />
+
+        {/*wall*/}
+        <Wall direction={moveWall} />
+
+        {/* fly topping*/}
+        {show && flytopping && (
+          <Flytopping
+            topping={flytopping}
+            direction={flyDir}
+            onArrive={() => {
+              setShow(false);
+              updateIce();
+              setFlytopping(null);
+
+              setTimeout(() => {
+                setShow(true);
+              }, 500);
+            }} />
+        )}
+
       </div>
 
       {/* right-bottom*/}
@@ -152,8 +267,16 @@ export default function Game8Canvas() {
             flex: 1,
           }}>
 
-          <Timer duration={100} onEnd={() => {
-            // 時間結束時的處理
+          <Timer duration={10} onEnd={() => {
+            setTimeout(() => {
+              if (coin >= 100) {
+                handleSuccess(true);
+              }
+              else {
+                handleSuccess(false);
+              }
+            }, 100)
+
           }}></Timer>
 
         </div>
@@ -162,7 +285,14 @@ export default function Game8Canvas() {
         <button
           onClick={
             () => {
+              setShow(false);
+              chekeIce();
+              setIce([]);
               setOrder(generateOrder());
+
+              setTimeout(() => {
+                setShow(true);
+              }, 500); //new round
             }
           }
           style={{
@@ -226,9 +356,16 @@ export default function Game8Canvas() {
               boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
             }}
           >
-            <h2 style={{ color: "#505166", fontSize: 22, fontWeight: 700, marginBottom: 18, textAlign: "center" }}>
-              Success！
-            </h2>
+            {success ? (
+              <h2 style={{ color: "#505166", fontSize: 22, fontWeight: 700, marginBottom: 18, textAlign: "center" }}>
+                Success！
+              </h2>
+            ) : (
+              <h2 style={{ color: "#505166", fontSize: 22, fontWeight: 700, marginBottom: 18, textAlign: "center" }}>
+                Fail ＞＜
+              </h2>
+            )}
+
             <div style={{ display: "flex", gap: 16 }}>
               <button
                 onClick={() => {
@@ -236,7 +373,11 @@ export default function Game8Canvas() {
                   setShowOverlay(false);
                   setSuccess(false);
                   localStorage.removeItem("game2Success");
-                  // TODO: 這裡也要重置你自己的遊戲狀態
+
+                  setIce([]);
+                  setCoin(0);
+                  setFlytopping(null);
+                  setShow(false);
                 }}
                 style={{
                   padding: "8px 24px",
