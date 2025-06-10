@@ -1,0 +1,303 @@
+/* Game4Canvas.css - 全新版，以左中右三欄布局 */
+
+/* 整體容器 */
+/* 取消內層邊框，讓它撐滿外面已經有的容器 */
+.game-wrapper {
+  /* 撐滿父容器，不要再畫自己的框 */
+  position: static;      /* 或直接移除 position */
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;          /* 拿掉內層 border */
+  box-shadow: none;      /* 拿掉內層 shadow */
+  background: transparent; /* 背景透明 */
+  display: flex;         /* 保留原本的 flex 佈局 */
+}
+
+
+/* 左欄：物品分值對照表 */
+.sidebar {
+  width: 200px;
+  max-width: 100vw;
+  padding: 8px;
+  border-right: 2px solid #C5AC6B;
+  box-sizing: border-box;
+}
+.sidebar h2 {
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 16px;
+  color: #505166;
+}
+/* 分值表四欄、置中對齊 */
+.value-table {
+  display: grid;
+  grid-template-columns: auto auto auto auto;
+  column-gap: 18px;        /* 圖示與數值之間橫向間距 */
+  row-gap: 18px;           /* 直向間距 */  
+  justify-content: center; /* 整體水平置中 */
+  justify-items: center;   /* 格子內部水平置中 */
+  align-items: center;     /* 格子內部垂直置中 */
+  width: 100%;
+  max-width: 100%;
+}
+
+/* 圖示尺寸 */
+.value-table img {
+  width: 32px;
+  height: 32px;
+  margin: 0;
+}
+
+/* 分值文字 */
+.value-table .value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #505166;
+  opacity: 1;
+}
+
+.sidebar-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #505166;
+  margin-bottom: 16px;
+  justify-items: center;
+  justify-content: center;
+  display: flex;
+}
+
+.play-area {
+  flex: 1;
+  position: relative;
+  padding-top: 120px;
+  /* background: url('/shelves.png') no-repeat center bottom; */
+  /* background-size: contain; */
+  background: transparent;
+}
+
+.play-area #ring-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+/* 新增 target-row 響應式橫排 */
+.target-row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 2vw;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 1vw 0 0 0;
+  box-sizing: border-box;
+}
+/* target 靜態定位，響應式寬高 */
+.target {
+  position: absolute;
+  width: clamp(28px, 12vw, 56px);
+  height: clamp(28px, 12vw, 56px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  /* transform 由 JS 控制 */
+}
+.target img {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+/* 丟出圈圈動畫 */
+.ring {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  /* left: calc(50% - 25px);
+  top: calc(50% - 25px); */
+  transform: scale(0);
+  transition: transform 0.6s ease-out;
+  z-index: 20;
+}
+.ring.throw {
+  transform: translate(var(--tx), var(--ty)) scale(1);
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 右欄：分數與剩餘圈數 */
+.score-panel {
+  width: 200px;
+  padding: 16px;
+  border-left: 2px solid #C5AC6B;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.score-panel .score-display,
+.score-panel .remaining-display {
+  display: flex;
+  align-items: center;
+  background: #FFF8DF;
+  padding: 8px 12px;
+  border: 1px solid #C5AC6B;
+  border-radius: 8px;
+}
+.score-panel .label {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #505166;
+}
+.score-panel .value {
+  font-size: 1.3rem;
+  color: #333;
+}
+.score-panel .remaining-icon {
+  width: 32px;
+  height: 32px;
+  margin-left: 8px;
+}
+
+/* 通關覆蓋層 */
+.game-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.game-dialog {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  text-align: center;
+}
+.game-dialog h2 {
+  margin-bottom: 16px;
+  color: #505166;
+}
+.button-group {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+.button-group button {
+  padding: 8px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.button-group button:first-child {
+  background: #E36B5B;
+  color: #fff;
+}
+.button-group button:last-child {
+  background: #505166;
+  color: #fff;
+}
+.play-area {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding-top: 0;
+  background: transparent;
+}
+.play-area .ring-container {
+  position: absolute; width:100%; height:100%; top:0; left:0;
+}
+.indicator {
+  position: absolute;
+  width: 55px;
+  height: 55px;
+  left: 50%;
+  bottom: 12px;
+  top: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 20;
+}
+.grid-container {
+  display:grid;
+  grid-template-columns: repeat(6,1fr);
+  grid-template-rows: repeat(4,auto);
+  gap:12px;
+  position:absolute; top:100px; width:100%;
+}
+.grid-cell {
+  width:48px; height:48px; margin:0 auto; cursor:pointer; position:relative;
+}
+.grid-cell img { width:100%; height:100%; pointer-events:none; }
+
+.shelves-bar {
+  position: absolute;
+  left: 5%;
+  width: 90%;
+  height: 24px;
+  max-height: 24px;
+  background: #D6C28B;
+  border-radius: 8px;
+  z-index: 2;
+}
+.shelves-bar.bar1 { top: 25%; }
+.shelves-bar.bar2 { top: 40%; }
+.shelves-bar.bar3 { top: 55%; }
+.shelves-bar.bar4 { top: 70%; }
+
+/* 響應式設計：螢幕寬度小於600px時自動調整 */
+@media (max-width: 600px) {
+  .sidebar {
+    width: 100vw;
+    min-width: 0;
+    padding: 4px;
+  }
+  .value-table {
+    grid-template-columns: auto auto;
+    column-gap: 8px;
+    row-gap: 8px;
+  }
+  .value-table img {
+    width: 24px;
+    height: 24px;
+  }
+  .value-table .value {
+    font-size: 12px;
+  }
+  .sidebar-title {
+    font-size: 1rem;
+    margin-bottom: 6px;
+  }
+}
+
+.game-overlay-portal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important;
+  background: rgba(0,0,0,0.4) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

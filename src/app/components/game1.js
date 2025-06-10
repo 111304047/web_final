@@ -173,7 +173,7 @@ export default function GestureCanvas() {
                 textAlign: "center",
               }}
             >
-              Success！
+              挑戰成功！
             </h2>
             <div style={{ display: "flex", gap: 16 }}>
               <button
@@ -196,11 +196,11 @@ export default function GestureCanvas() {
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 }}
               >
-                Again
+                再玩一次
               </button>
               <button
                 onClick={() => {
-                  window.location.href = "/";
+                  window.location.href = "/menu";
                 }}
                 style={{
                   padding: "8px 24px",
@@ -214,7 +214,7 @@ export default function GestureCanvas() {
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 }}
               >
-                Back
+                回到選單
               </button>
             </div>
           </div>

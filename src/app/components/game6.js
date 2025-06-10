@@ -181,7 +181,7 @@ export default function Game6Canvas() {
             left: "50%",
             top: "50%",
             transform: "translate(-50%, -50%)",
-            width: 250,
+            width: countdown === 1 ? 180 : 250,
             zIndex: 10,
           }}
         />
@@ -264,37 +264,86 @@ export default function Game6Canvas() {
       )}
 
       {showOverlay && (
-        <img
-          src={score >= 100 ? "/success.png" : "/fail.png"}
-          alt="結束圖"
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 300,
-            zIndex: 10,
-          }}
-        />
-      )}
-
-      {gameEnded && (
         <div style={{
-          position: "absolute",
-          bottom: 10,
-          left: "50%",
-          transform: "translateX(-50%)",
-          color: "#505166",
-          background: "#fff",
-          padding: "8px 16px",
-          borderRadius: 12,
-          fontSize: 18,
+          position: "fixed",
+          left: 0,
+          top: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.25)",
+          zIndex: 99999,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}>
-          得分：{score} 分
-          <br />
-          <button onClick={handleResetGame} style={{ marginTop: 8, background: '#E36B5B', color: '#fff', border: 'none', borderRadius: 6, padding: '6px 16px', cursor: 'pointer' }}>
-            再玩一次
-          </button>
+          <div style={{
+            background: "#F5F0E4",
+            borderRadius: 20,
+            boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
+            padding: "32px 32px 16px 32px",
+            minWidth: 320,
+            minHeight: 220,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            position: "relative",
+          }}>
+            <img
+              src="/daruma.png"
+              alt={score >= 100 ? "正達摩" : "反達摩"}
+              style={{
+                width: 120,
+                marginBottom: 8,
+                transform: score >= 100 ? "none" : "rotate(180deg)",
+                transition: "transform 0.3s",
+              }}
+            />
+            <div style={{ fontSize: 22, color: "#C5AC6B", fontWeight: 600, marginBottom: 8 }}>
+              得分：{score} 分
+            </div>
+            <h2 style={{
+              fontSize: 28,
+              fontWeight: 700,
+              color: "#505166",
+              margin: 0,
+              marginBottom: 8,
+              textAlign: "center"
+            }}>{score >= 100 ? "挑戰成功" : "挑戰失敗"}</h2>
+            <div style={{ display: "flex", gap: 16, marginTop: 8 }}>
+              <button
+                onClick={handleResetGame}
+                style={{
+                  padding: "8px 24px",
+                  color: "#fff",
+                  background: "#E36B5B",
+                  border: "none",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                再玩一次
+              </button>
+              <button
+                onClick={() => { window.location.href = "/menu"; }}
+                style={{
+                  padding: "8px 24px",
+                  color: "#fff",
+                  background: "#505166",
+                  border: "none",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  fontSize: 16,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                回到選單
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -26,7 +26,6 @@ export default function Game3Canvas() {
   const [timeLeft, setTimeLeft] = useState(105);
   const [started, setStarted] = useState(false);
   const [result, setResult] = useState(null);
-  const [showIntro, setShowIntro] = useState(true);
   const [success, setSuccess] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const { user, login } = useAuth();
@@ -63,13 +62,13 @@ export default function Game3Canvas() {
   }
 
   useEffect(() => {
-    if (countdown > 0 && !showIntro) {
+    if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
       setStarted(true);
     }
-  }, [countdown, showIntro]);
+  }, [countdown]);
 
   useEffect(() => {
     if (!started || result) return;
@@ -125,7 +124,6 @@ export default function Game3Canvas() {
     setTimeLeft(105);
     setCountdown(3);
     setStarted(false);
-    setShowIntro(true);
   };
 
   return (
@@ -138,38 +136,6 @@ export default function Game3Canvas() {
       alignItems: 'flex-start',
       position: 'relative'
     }}>
-      {showIntro && (
-        <div style={{
-          position: 'absolute',
-          zIndex: 20,
-          width: '100%',
-          height: '100%',
-          background: `url('/g3/g31.png') no-repeat center/cover`,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'flex-end',
-          alignItems: 'center'
-        }}>
-          <button
-            onClick={() => setShowIntro(false)}
-            style={{
-              marginTop: '2rem',
-              marginBottom: '1rem',
-              padding: '1rem 2rem',
-              fontSize: '1.25rem',
-              fontWeight: 'bold',
-              backgroundColor: '#E36B5B',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '12px',
-              cursor: 'pointer'
-            }}
-          >
-            開始遊戲
-          </button>
-        </div>
-      )}
-
       <div style={{
         position: 'absolute',
         top: '1.75vw',
@@ -241,7 +207,7 @@ export default function Game3Canvas() {
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 16 }}>
               <button onClick={resetGame} style={btnStyle('#E36B5B')}>再玩一次</button>
-              <button onClick={() => window.location.href = "/"} style={btnStyle('#C5AC6B')}>回到首頁</button>
+              <button onClick={() => window.location.href = "/menu"} style={btnStyle('#C5AC6B')}>回到選單</button>
             </div>
           </div>
         </div>

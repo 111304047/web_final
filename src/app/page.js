@@ -1,9 +1,11 @@
 'use client';
 import React, { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from './AuthContext';
 
 export default function Home() {
   const router = useRouter();
+  const { user } = useAuth();
   const [btnScale, setBtnScale] = React.useState(1);
   const [iconAnim, setIconAnim] = React.useState(false);
   const [isTall, setIsTall] = useState(true);
@@ -36,28 +38,32 @@ export default function Home() {
   useEffect(() => {
     if (iconAnim) {
       const timer = setTimeout(() => {
-        router.push('/menu');
+        if (user) {
+          router.push('/menu');
+        } else {
+          router.push('/login');
+        }
       }, 600);
       return () => clearTimeout(timer);
     }
-  }, [iconAnim, router]);
+  }, [iconAnim, router, user]);
 
   return (
     <div
       ref={containerRef}
       style={{
-        minHeight: 'calc(100vh - 160px)',
+        height: 'calc(100vh - 160px)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#172A3F',
         marginTop: 120,
         marginBottom: 140,
         border: '3px solid #C5AC6B',
         boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
         position: 'relative',
         overflow: 'hidden',
+        background: '#172A3F',
       }}
     >
       {/* 大標題 */}
@@ -137,8 +143,8 @@ export default function Home() {
           src="/menu/home.png"
           alt="Home Icon"
           style={{
-            maxWidth: minSide ? `${minSide}px` : '100%',
-            maxHeight: minSide ? `${minSide}px` : '100%',
+            maxWidth: minSide ? `${minSide}px` : '100vw',
+            maxHeight: minSide ? `${minSide}px` : '60vh',
             width: 'auto',
             height: 'auto',
             objectFit: 'contain',

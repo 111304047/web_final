@@ -411,7 +411,7 @@ export default function Game11Canvas() {
               </button>
               <button
                 onClick={() => {
-                  window.location.href = "/";
+                  window.location.href = "/menu";
                 }}
                 style={{
                   aspectRatio: '2 / 1',
@@ -432,7 +432,7 @@ export default function Game11Canvas() {
                   whiteSpace: 'nowrap'
                 }}
               >
-                回到主頁
+                回到選單
               </button>
             </div>
           </div>

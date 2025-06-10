@@ -11,7 +11,7 @@ export default function Ice({ components }) {
             }}
         >
             <img
-                src="./game8/ice.svg"
+                src="/game8/ice.svg"
                 alt="ice"
                 style={{
                     width: "25%",
@@ -24,7 +24,7 @@ export default function Ice({ components }) {
             {components.map((component, i) => (
                 <img
                     key={i}
-                    src={`./game8/onIce/${component.name}.svg`}
+                    src={`/game8/onIce/${component.name}.svg`}
                     alt={component.name}
                     style={{
                         position: "absolute",

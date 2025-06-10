@@ -13,7 +13,7 @@ const PRIZES = [
 
 export default function Game7Canvas() {
   // stage: "intro" - 遊戲說明, "round" - 每回合開始, "playing" - 遊戲進行中, "result" - 結算
-  const [stage, setStage] = useState("intro"); // 遊戲狀態
+  const [stage, setStage] = useState("round"); // 預設直接進入 round
 
   // 射擊次數、分數、命中獎品列表
   const [shotsLeft, setShotsLeft] = useState(MAX_SHOTS);
@@ -29,7 +29,7 @@ export default function Game7Canvas() {
 
   // 當前回合、彈窗狀態、結果提示
   const [currentRound, setCurrentRound] = useState(1);
-  const [showRoundModal, setShowRoundModal] = useState(false);
+  const [showRoundModal, setShowRoundModal] = useState(true);
   const [showResultTip, setShowResultTip] = useState("");
   const canvasRef = useRef(null);
   const { user, login } = useAuth();
@@ -491,13 +491,13 @@ export default function Game7Canvas() {
 
   // 再玩一次
   const resetGame = () => {
-    setStage("intro");
+    setStage("round"); // 直接回到 round
     setScore(0);
     setHits([]);
     setShotsLeft(MAX_SHOTS);
     setCurrentRound(1);
     setQteStep(0);
-    setShowRoundModal(false);
+    setShowRoundModal(true);
     setShowResultTip("");
     setHasAddedScore(false);
     localStorage.removeItem("game7Success");
@@ -515,46 +515,13 @@ export default function Game7Canvas() {
   // 畫面
   return (
     <>
-      {/* 遊戲說明 */}
-      {stage === "intro" && (
-        <div style={{ textAlign: "center", padding: 32 }}>
-          <h2>百發百中</h2>
-          <ol style={{
-            textAlign: "left", 
-            maxWidth: 400,
-            margin: "0 auto", 
-            display: "block",
-            padding: 0,
-            listStylePosition: "inside"
-          }}>
-            <li>遊戲說明遊戲說明</li>
-            <li>遊戲說明遊戲說明</li>
-          </ol>
-          <button
-            onClick={startGame}
-            style={{
-              marginTop: 24,
-              padding: "12px 32px",
-              fontSize: 20,
-              borderRadius: 8,
-              background: "#C5AC6B",
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            開始遊戲
-          </button>
-        </div>
-      )}
-
       {/* 每回合開始彈窗 */}
       {showRoundModal && stage !== "result" && (
         <div style={{
           position: "fixed",
           top: 0, left: 0, width: "100vw", height: "100vh",
           background: "rgba(0,0,0,0.25)",
-          zIndex: 9999,
+          zIndex: 99999,
           display: "flex", alignItems: "center", justifyContent: "center"
         }}>
           <div style={{
@@ -587,7 +554,7 @@ export default function Game7Canvas() {
           position: "fixed",
           top: 0, left: 0, width: "100vw", height: "100vh",
           background: "rgba(0,0,0,0.15)",
-          zIndex: 9999,
+          zIndex: 99999,
           display: "flex", alignItems: "center", justifyContent: "center"
         }}>
           <div style={{
@@ -627,57 +594,64 @@ export default function Game7Canvas() {
       {/* 結算畫面 */}
       {stage === "result" && (
         <div style={{
-          textAlign: "center",
-          padding: 32,
-          background: "#fff",
-          borderRadius: 16,
-          boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
-          maxWidth: 400,
-          margin: "40px auto"
+          position: "fixed",
+          top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.25)",
+          zIndex: 99999,
+          display: "flex", alignItems: "center", justifyContent: "center"
         }}>
-          <h2 style={{ color: "#505166" }}>遊戲結束</h2>
-          <div style={{ color: "#505166" }}>得分：{score}</div>
-          <div>評價：{getGrade(score)}</div>
-          <div style={{ margin: "16px 0" }}>
-            {getGrade(score) === "A" || getGrade(score) === "S"
-              ? <span style={{ color: "#C5AC6B" }}>恭喜通關！</span>
-              : <span style={{ color: "#E36B5B" }}>未達A級，挑戰失敗...</span>
-            }
+          <div style={{
+            textAlign: "center",
+            padding: 32,
+            background: "#fff",
+            borderRadius: 16,
+            boxShadow: "0 4px 32px rgba(0,0,0,0.18)",
+            maxWidth: 400,
+            margin: "40px auto"
+          }}>
+            <h2 style={{ color: "#505166" }}>遊戲結束</h2>
+            <div style={{ color: "#505166" }}>得分：{score}</div>
+            <div>評價：{getGrade(score)}</div>
+            <div style={{ margin: "16px 0" }}>
+              {getGrade(score) === "A" || getGrade(score) === "S"
+                ? <span style={{ color: "#C5AC6B" }}>恭喜通關！</span>
+                : <span style={{ color: "#E36B5B" }}>未達A級，挑戰失敗...</span>
+              }
+            </div>
+            <button
+              onClick={resetGame}
+              style={{
+                padding: "8px 24px",
+                color: "#fff",
+                background: "#E36B5B",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: "pointer",
+                marginRight: 12,
+              }}
+            >
+              再玩一次
+            </button>
+            <button
+              onClick={() => window.location.href = "/menu"}
+              style={{
+                padding: "8px 24px",
+                color: "#fff",
+                background: "#505166",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              回到選單
+            </button>
           </div>
-          <button
-            onClick={resetGame}
-            style={{
-              padding: "8px 24px",
-              color: "#fff",
-              background: "#E36B5B",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 16,
-              cursor: "pointer",
-              marginRight: 12,
-            }}
-          >
-            再玩一次
-          </button>
-          <button
-            onClick={() => window.location.href = "/"}
-            style={{
-              padding: "8px 24px",
-              color: "#fff",
-              background: "#505166",
-              border: "none",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 16,
-              cursor: "pointer",
-            }}
-          >
-            返回主頁
-          </button>
         </div>
-      )
-      }
+      )}
     </>
   );
 }

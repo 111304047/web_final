@@ -459,3 +459,31 @@
 .takoyaki-hole.raw {
     animation: takoyaki-bubbling 1s infinite ease-in-out;
 }
+
+.game-wrapper::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.game-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(197, 172, 107, 0.5);
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.game-wrapper:hover::-webkit-scrollbar-thumb,
+.game-wrapper:active::-webkit-scrollbar-thumb,
+.game-wrapper:focus::-webkit-scrollbar-thumb {
+  background: rgba(197, 172, 107, 0.10);
+}
+.game-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Firefox */
+.game-wrapper {
+  scrollbar-color: rgba(197,172,107,0.5) transparent;
+  scrollbar-width: thin;
+}
+.game-wrapper:hover,
+.game-wrapper:active,
+.game-wrapper:focus {
+  scrollbar-color: rgba(197,172,107,0.5) transparent;
+}

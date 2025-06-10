@@ -37,14 +37,16 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
-  const { username, score } = await request.json();
+  const { username, score, playCount } = await request.json();
   if (!username || typeof score !== 'number') {
     return new Response(JSON.stringify({ error: 'Missing username or score' }), { status: 400 });
   }
   const userRef = ref(db, `users/${username}`);
   try {
-    await update(userRef, { score });
-    return new Response(JSON.stringify({ username, score }), { status: 200 });
+    const updateData = { score };
+    if (typeof playCount === 'number') updateData.playCount = playCount;
+    await update(userRef, updateData);
+    return new Response(JSON.stringify({ username, score, playCount }), { status: 200 });
   } catch (err) {
     return new Response(JSON.stringify({ error: 'Failed to update score' }), { status: 500 });
   }

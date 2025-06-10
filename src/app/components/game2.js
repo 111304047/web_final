@@ -26,6 +26,22 @@ export default function Game2Canvas() {
   const [monsterRetreat, setMonsterRetreat] = useState(false);
   const [firstHold, setFirstHold] = useState(true);
 
+  // 響應式：監聽視窗大小
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    function handleResize() {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // 響應式尺寸計算
+  const characterWidth = Math.min(windowSize.width * 0.7, windowSize.height * 0.7, 900) * 2;
+  const monsterHeight = Math.min(windowSize.height * 0.8, 1000);
+  const heartbeatWidth = characterWidth * 0.3;
+
   useEffect(() => {
     const hasCleared = localStorage.getItem("game2Success") === "true";
     if (hasCleared) {
@@ -244,7 +260,7 @@ export default function Game2Canvas() {
       onMouseUp={e => { if (e.button === 0) stopHold(); }}
     >
       {/* 背景和干擾物之間的角色圖 */}
-      <div style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%)", zIndex: 1.5, width: "60vw", maxWidth: 700, pointerEvents: "none", userSelect: "none" }}>
+      <div style={{ position: "absolute", left: "50%", bottom: 0, transform: "translateX(-50%)", zIndex: 1.5, width: characterWidth, maxWidth: "90vw", pointerEvents: "none", userSelect: "none" }}>
         <img
           src={isHolding ? "/charater-on.png" : "/charater-off.png"}
           alt="character"
@@ -260,7 +276,7 @@ export default function Game2Canvas() {
               left: "54%",
               top: "40%",
               transform: "translate(-50%, -50%) scale(0.4)",
-              width: "30%",
+              width: heartbeatWidth,
               pointerEvents: "none",
               userSelect: "none",
             }}
@@ -289,7 +305,7 @@ export default function Game2Canvas() {
         }
         // 彈性效果疊加
         const elasticOffset = Math.sin(progress * Math.PI) * 30;
-        const bottomPosition = `calc(-${MONSTER_HEIGHT}px + ${progress * (MONSTER_HEIGHT - 150)}px + 50px + ${elasticOffset}px)`;
+        const bottomPosition = `calc(-${monsterHeight}px + ${progress * (monsterHeight - 150)}px + 50px + ${elasticOffset}px)`;
         return (
           <div style={{
             position: "absolute",
@@ -299,7 +315,7 @@ export default function Game2Canvas() {
             zIndex: 2,
             transition: "bottom 0.1s linear",
           }}>
-            <img src="/monster.png" alt="monster" style={{ width: MONSTER_HEIGHT, height: MONSTER_HEIGHT, userSelect: "none", pointerEvents: "none", objectFit: "contain" }} />
+            <img src="/monster.png" alt="monster" style={{ width: monsterHeight, height: monsterHeight, userSelect: "none", pointerEvents: "none", objectFit: "contain" }} />
           </div>
         );
       })()}
@@ -334,7 +350,7 @@ export default function Game2Canvas() {
             }}
           >
             <h2 style={{ color: fail ? "#E36B5B" : "#505166", fontSize: 22, fontWeight: 700, marginBottom: 18, textAlign: "center" }}>
-              {fail ? "Fail" : "Success！"}
+              {fail ? "挑戰失敗！" : "挑戰成功！"}
             </h2>
             <div style={{ display: "flex", gap: 16 }}>
               <button
@@ -355,11 +371,11 @@ export default function Game2Canvas() {
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 }}
               >
-                Again
+                再玩一次
               </button>
               <button
                 onClick={() => {
-                  window.location.href = "/";
+                  window.location.href = "/menu";
                 }}
                 style={{
                   padding: "8px 24px",
@@ -373,7 +389,7 @@ export default function Game2Canvas() {
                   boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                 }}
               >
-                Back
+                回到選單
               </button>
             </div>
           </div>

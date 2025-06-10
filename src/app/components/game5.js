@@ -211,9 +211,6 @@ export default function Game5Canvas() {
               />
               <h2 className="result-title">{success ? "挑戰成功" : "挑戰失敗"}</h2>
               <div className="result-buttons">
-                <button className="btn btn-gold" onClick={() => (window.location.href = "/")}>
-                  回到首頁
-                </button>
                 <button
                   className="btn btn-red"
                   onClick={() => {
@@ -227,6 +224,9 @@ export default function Game5Canvas() {
                   }}
                 >
                   再玩一次
+                </button>
+                <button className="btn btn-gold" onClick={() => (window.location.href = "/menu")}>
+                  回到選單
                 </button>
               </div>
             </div>

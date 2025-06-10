@@ -30,7 +30,7 @@ export default function Timer({ duration = 100, onEnd }) {
             }}>
 
             <img
-                src="./game8/clock.svg"
+                src="/game8/clock.svg"
                 alt="clock"
                 style={{
                     width: "40%",

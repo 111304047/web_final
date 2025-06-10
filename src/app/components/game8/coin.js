@@ -11,7 +11,7 @@ export default function Coin({ coins }) {
             }}>
 
             <img
-                src="./game8/coin.svg"
+                src="/game8/coin.svg"
                 alt="coin"
                 style={{
                     width: "40%",

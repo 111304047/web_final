@@ -28,7 +28,7 @@ export default function Login() {
         return;
       }
       login({ username: data.username, score: data.score });
-      router.push('/');
+      router.push('/menu');
     } catch (err) {
       setError('Network error');
     }
@@ -110,7 +110,7 @@ export default function Login() {
             boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
           }}
         >
-          Log In
+          Submit
         </button>
       </form>
     </div>
