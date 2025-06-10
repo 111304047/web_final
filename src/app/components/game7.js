@@ -456,6 +456,8 @@ export default function Game7Canvas() {
   }, [handleKeyDown]);
 
   // 結算
+  const [hasAddedScore, setHasAddedScore] = useState(false); // 新增
+
   useEffect(() => {
     async function handleSuccess() {
       localStorage.setItem("game7Success", "true");
@@ -475,13 +477,17 @@ export default function Game7Canvas() {
         }
       }
     }
-    if (stage === "result") {
+    if (
+      stage === "result" &&
+      !hasAddedScore 
+    ) {
       const grade = getGrade(score);
       if (grade === "A" || grade === "S") {
         handleSuccess();
+        setHasAddedScore(true);
       }
     }
-  }, [stage, score, user, login]);
+  }, [stage, score, user, login, hasAddedScore]);
 
   // 再玩一次
   const resetGame = () => {
@@ -493,6 +499,7 @@ export default function Game7Canvas() {
     setQteStep(0);
     setShowRoundModal(false);
     setShowResultTip("");
+    setHasAddedScore(false);
     localStorage.removeItem("game7Success");
   };
 
@@ -515,7 +522,7 @@ export default function Game7Canvas() {
           <ol style={{
             textAlign: "left", 
             maxWidth: 400,
-            margin: "0 auto",  // 區塊置中
+            margin: "0 auto", 
             display: "block",
             padding: 0,
             listStylePosition: "inside"
