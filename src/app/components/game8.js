@@ -9,9 +9,33 @@ import Coin from "./game8/coin.js";
 import Ice from "./game8/ice.js";
 
 export default function Game8Canvas() {
+  const toppings = [
+    {name: "red", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
+    {name: "yellow", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
+    {name: "green", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
+    {name: "blue", top: "39%", left: "51%", scale: "27.5%", zIndex: 1},
+    {name: "chocolate", top: "45%", left: "51%", scale: "27.5%", zIndex: 2},
+    {name: "strawberry", top: "57.5%", left: "50%", scale: "40%", zIndex: 3},
+    {name: "watermelon", top: "57.5%", left: "50%", scale: "40%", zIndex: 3},
+    {name: "pudding", top: "32%", left: "50%", scale: "12%", zIndex: 3},
+    {name: "cherry", top: "30%", left: "50%", scale: "12%", zIndex: 3},
+    {name: "takoyaki", top: "32%", left: "50%", scale: "20%", zIndex: 3},
+    {name: "fishcake", top: "32%", left: "51%", scale: "17%", zIndex: 3},
+    {name: "shrimp", top: "54.5%", left: "50.5%", scale: "40%", zIndex: 3},
+    {name: "fishplate", top: "57.5%", left: "50%", scale: "40%", zIndex: 3},
+  ]
+
+  const [order, setOrder] = useState([]);
+  const [ice, setIce] = useState([]);
+  const [coin, setCoin] = useState(0);
+
   const [success, setSuccess] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const { user, login } = useAuth();
+
+  useEffect(() => {
+    setOrder(generateOrder());
+  }, []);
 
   useEffect(() => {
     const hasCleared = localStorage.getItem("game2Success") === "true";
@@ -20,6 +44,15 @@ export default function Game8Canvas() {
       setShowOverlay(false);
     }
   }, []);
+
+  // update order
+  function generateOrder() {
+    const toppings1 = Math.floor(Math.random() * 4); //syrup
+    const toppings2 = Math.floor(Math.random() * 3) + 4; //bottom
+    const toppings3 = Math.floor(Math.random() * 2) + 7; //top
+
+    return [toppings[toppings1], toppings[toppings2], toppings[toppings3]];
+  }
 
   // 當過關時呼叫此函式
   async function handleSuccess() {
@@ -77,11 +110,7 @@ export default function Game8Canvas() {
           boxSizing: "border-box",
         }}>
 
-        <Order orders={[
-          { name: "green" },
-          { name: "cherry" },
-          { name: "watermelon" }
-        ]} />
+        <Order orders={order} />
 
       </div>
 
@@ -95,13 +124,12 @@ export default function Game8Canvas() {
           minWidth: "250px",
           maxWidth: "500px",
           margin: "10px",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}>
 
-        <Ice components={[
-          { name: "ice" },
-          { name: "ice" },
-          { name: "ice" }
-        ]} />
+        <Ice components={ice} />
       </div>
 
       {/* right-bottom*/}
@@ -132,7 +160,11 @@ export default function Game8Canvas() {
 
         {/* serve*/}
         <button
-          /*onClick={}*/
+          onClick={
+            () => {
+              setOrder(generateOrder());
+            }
+          }
           style={{
             background: "#E36B5B",
             borderRadius: 12,
@@ -159,7 +191,7 @@ export default function Game8Canvas() {
             flex: 1
           }}>
 
-          <Coin coins={100} />
+          <Coin coins={coin} />
         </div>
 
       </div>

@@ -22,7 +22,7 @@ export default function Order({ orders }) {
 
                     <img
                         src={"./game8/orderCard.svg"}
-                        alt={order.name}
+                        alt="card"
                         style={{
                             position: "absolute",
                             width: "100%",
