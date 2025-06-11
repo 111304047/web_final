@@ -214,7 +214,7 @@ export default function Game8Canvas() {
 
     setShowOverlay(true);
     // SCORE +1 並同步到 DB
-    if (user && user.username) {
+    if (user && user.username && success) {
       const newScore = (user.score || 0) + 1;
       try {
         const res = await fetch("/api/auth", {
