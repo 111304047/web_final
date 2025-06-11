@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../AuthContext";
 
 import Order from "./game8/order.js";
@@ -33,6 +33,7 @@ export default function Game8Canvas() {
   const [ice, setIce] = useState([]);
   const [coin, setCoin] = useState(0);
   const [timeKey, setTimeKey] = useState(10);
+  const coinRef = useRef(coin);
 
   const [moveWall, setMoveWall] = useState("top");
   const [flytopping, setFlytopping] = useState(null);
@@ -88,7 +89,7 @@ export default function Game8Canvas() {
   // }, []);
 
   useEffect(() => {
-    console.log("coin " + coin);
+    coinRef.current = coin;
   }, [coin]);
 
   //飛入方向
@@ -204,7 +205,7 @@ export default function Game8Canvas() {
     localStorage.setItem("game2Success", "true");
     //setSuccess(true);
 
-    if (coin >= 300) {
+    if (coinRef.current >= 300) {
       setSuccess(true);
     }
     else {
