@@ -6,14 +6,14 @@ import { getDatabase } from 'firebase/database';
 // 將下方 config 替換為你的 Firebase 專案設定
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyA-2pg9R-I5oXa4CJz8EQWN0ckJOii5dKo",
-    authDomain: "gudgame-9ad81.firebaseapp.com",
-    databaseURL: "https://gudgame-9ad81-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "gudgame-9ad81",
-    storageBucket: "gudgame-9ad81.appspot.com",
-    messagingSenderId: "480280886357",
-    appId: "1:480280886357:web:cecc7e336c056adbc6a8dc"
-  };
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
 
 // 避免重複初始化
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
