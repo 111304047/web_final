@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../AuthContext";
 
 import Order from "./game8/order.js";
@@ -33,6 +33,7 @@ export default function Game8Canvas() {
   const [ice, setIce] = useState([]);
   const [coin, setCoin] = useState(0);
   const [timeKey, setTimeKey] = useState(10);
+  const coinRef = useRef(coin);
 
   const [moveWall, setMoveWall] = useState("top");
   const [flytopping, setFlytopping] = useState(null);
@@ -87,8 +88,8 @@ export default function Game8Canvas() {
   //   return () => clearInterval(interval);
   // }, []);
 
-  useEffect(()=>{
-    console.log("coin " + coin);
+  useEffect(() => {
+    coinRef.current = coin;
   }, [coin]);
 
   //飛入方向
@@ -202,18 +203,18 @@ export default function Game8Canvas() {
   // 當成功或失敗時呼叫此函式
   async function handleSuccess() {
     localStorage.setItem("game2Success", "true");
-    setSuccess(true);
+    //setSuccess(true);
 
-    // if(coin >= 300){
-    //   setSuccess(true);
-    // }
-    // else{
-    //   setSuccess(false);
-    // }
+    if (coinRef.current >= 300) {
+      setSuccess(true);
+    }
+    else {
+      setSuccess(false);
+    }
 
     setShowOverlay(true);
     // SCORE +1 並同步到 DB
-    if (user && user.username) {
+    if (user && user.username && success) {
       const newScore = (user.score || 0) + 1;
       try {
         const res = await fetch("/api/auth", {
