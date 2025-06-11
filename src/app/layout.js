@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Icon from "./components/icon";
 import ClientBar from './components/ClientBar';
 import ProfileLoginButton from './components/ProfileLoginButton';
 import { AuthProvider, useAuth } from './AuthContext';

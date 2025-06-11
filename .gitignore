@@ -134,3 +134,6 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Firebase config (optional, if you want to avoid uploading keys)
+src/app/firebase.js
