@@ -12,19 +12,19 @@ import Wall from "./game8/wall.js";
 
 export default function Game8Canvas() {
   const toppings = [
-    { name: "red", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
-    { name: "yellow", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
-    { name: "green", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
-    { name: "blue", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 1 },
-    { name: "chocolate", top: "47%", left: "50%", scale: "18%", zIndex: 2 },
-    { name: "strawberry", top: "55%", left: "50%", scale: "25%", zIndex: 3 },
-    { name: "watermelon", top: "55%", left: "50%", scale: "25%", zIndex: 3 },
-    { name: "pudding", top: "39%", left: "50%", scale: "8%", zIndex: 3 },
-    { name: "cherry", top: "37%", left: "50%", scale: "7%", zIndex: 3 },
-    { name: "takoyaki", top: "37.5%", left: "50%", scale: "14%", zIndex: 3 },
-    { name: "fishcake", top: "37%", left: "50%", scale: "14%", zIndex: 3 },
-    { name: "shrimp", top: "52%", left: "50.5%", scale: "26.5%", zIndex: 3 },
-    { name: "fishplate", top: "54.5%", left: "50%", scale: "26%", zIndex: 3 },
+    { name: "red", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 5 },
+    { name: "yellow", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 5 },
+    { name: "green", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 5 },
+    { name: "blue", top: "43.3%", left: "50.6%", scale: "18%", zIndex: 5 },
+    { name: "chocolate", top: "47%", left: "50%", scale: "18%", zIndex: 6 },
+    { name: "strawberry", top: "55%", left: "50%", scale: "25%", zIndex: 7 },
+    { name: "watermelon", top: "55%", left: "50%", scale: "25%", zIndex: 7 },
+    { name: "pudding", top: "39%", left: "50%", scale: "8%", zIndex: 7 },
+    { name: "cherry", top: "37%", left: "50%", scale: "7%", zIndex: 7 },
+    { name: "takoyaki", top: "37.5%", left: "50%", scale: "14%", zIndex: 7 },
+    { name: "fishcake", top: "37%", left: "50%", scale: "14%", zIndex: 7 },
+    { name: "shrimp", top: "52%", left: "50.5%", scale: "26.5%", zIndex: 7 },
+    { name: "fishplate", top: "54.5%", left: "50%", scale: "26%", zIndex: 7 },
   ];
 
   const entryDirections = ["left", "right", "top", "bottom"];
@@ -32,10 +32,12 @@ export default function Game8Canvas() {
   const [order, setOrder] = useState([]);
   const [ice, setIce] = useState([]);
   const [coin, setCoin] = useState(0);
+  const [timeKey, setTimeKey] = useState(10);
 
   const [moveWall, setMoveWall] = useState("top");
   const [flytopping, setFlytopping] = useState(null);
-  const [show, setShow] = useState(true);
+  const [flyNum, setFlyNum] = useState(0);
+  const [show, setShow] = useState(false);
   const [flyDir, setFlyDir] = useState("top");
 
   const [success, setSuccess] = useState(false);
@@ -48,6 +50,7 @@ export default function Game8Canvas() {
       setSuccess(false);
       setShowOverlay(false);
     }
+    setShow(true);
   }, []);
 
   // 產生訂單
@@ -58,12 +61,35 @@ export default function Game8Canvas() {
   // 飛入配料
   useEffect(() => {
     if (show) {
-      const index = Math.floor(Math.random() * toppings.length);
-      const selectedTopping = toppings[index];
-      setFlytopping(selectedTopping);
+      if (flyNum % 3 == 0) {
+        setFlytopping(order[(flyNum / 3) % 3]);
+      }
+      else {
+        const index = Math.floor(Math.random() * toppings.length);
+        const selectedTopping = toppings[index];
+        setFlytopping(selectedTopping);
+      }
     }
+    setFlyNum(prev => prev + 1);
     console.log("Fly updated:", show);
   }, [show]);
+
+  // // 檢查碰撞
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (show && flyDir == moveWall) {
+  //       console.log("trigger");
+  //       setShow(false);
+  //       setTimeout(() => setShow(true), 500);
+  //     }
+  //   }, 100);
+
+  //   return () => clearInterval(interval);
+  // }, []);
+
+  useEffect(()=>{
+    console.log("coin " + coin);
+  }, [coin]);
 
   //飛入方向
   useEffect(() => {
@@ -75,15 +101,23 @@ export default function Game8Canvas() {
     const handleKeyDown = (e) => {
       switch (e.key) {
         case "ArrowUp":
+        case "W":
+        case "w":
           setMoveWall("top");
           break;
         case "ArrowDown":
+        case "S":
+        case "s":
           setMoveWall("bottom");
           break;
         case "ArrowLeft":
+        case "A":
+        case "a":
           setMoveWall("left");
           break;
         case "ArrowRight":
+        case "D":
+        case "d":
           setMoveWall("right");
           break;
         default:
@@ -162,15 +196,24 @@ export default function Game8Canvas() {
     });
 
     setCoin(prev => prev + delta);
+
   }
 
-  // 當過關時呼叫此函式
-  async function handleSuccess(b) {
+  // 當成功或失敗時呼叫此函式
+  async function handleSuccess() {
     localStorage.setItem("game2Success", "true");
-    setSuccess(b);
+    setSuccess(true);
+
+    // if(coin >= 300){
+    //   setSuccess(true);
+    // }
+    // else{
+    //   setSuccess(false);
+    // }
+
     setShowOverlay(true);
     // SCORE +1 並同步到 DB
-    if (user && user.username && b) {
+    if (user && user.username) {
       const newScore = (user.score || 0) + 1;
       try {
         const res = await fetch("/api/auth", {
@@ -267,14 +310,10 @@ export default function Game8Canvas() {
             flex: 1,
           }}>
 
-          <Timer duration={10} onEnd={() => {
+          <Timer key={timeKey} duration={100} onEnd={() => {
             setTimeout(() => {
-              if (coin >= 100) {
-                handleSuccess(true);
-              }
-              else {
-                handleSuccess(false);
-              }
+              handleSuccess();
+              setShow(false);
             }, 100)
 
           }}></Timer>
@@ -376,8 +415,10 @@ export default function Game8Canvas() {
 
                   setIce([]);
                   setCoin(0);
+                  setTimeKey(prev => prev += 1);
                   setFlytopping(null);
-                  setShow(false);
+                  setFlyNum(0);
+                  setShow(true);
                 }}
                 style={{
                   padding: "8px 24px",

@@ -8,6 +8,7 @@ export default function Ice({ components }) {
                 alignItems: "center",
                 position: "relative",
                 aspectRatio: "1 / 1",
+                zIndex: 2
             }}
         >
             <img

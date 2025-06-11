@@ -4,11 +4,17 @@ export default function Wall({ direction = "top" }) {
         return (
             <div
                 style={{
-                    background: "#F5F0E4",
+                    background: "radial-gradient(circle, #EFE8C2 0%, #C5AC6B 50%, #A88E4E 100%)",
+                    boxShadow: `
+                    0 0 40px #C5AC6B,
+                    0 0 20px #BCA25E,
+                    0 0 10px #A88E4E`,
+                    borderRadius: "8px 8px 2px 2px",
                     position: "absolute",
-                    height: "35%",
+                    height: "45%",
                     width: "20px",
-                    bottom: "65%",
+                    bottom: "50%",
+                    zIndex: 1
                 }}>
             </div>
         );
@@ -17,11 +23,16 @@ export default function Wall({ direction = "top" }) {
         return (
             <div
                 style={{
-                    background: "#F5F0E4",
+                    background: "radial-gradient(circle, #EFE8C2 0%, #C5AC6B 50%, #A88E4E 100%)",
+                    boxShadow: `
+                    0 0 40px #C5AC6B,
+                    0 0 20px #BCA25E,
+                    0 0 10px #A88E4E`,
+                    borderRadius: "2px 2px 8px 8px",
                     position: "absolute",
-                    height: "35%",
+                    height: "45%",
                     width: "20px",
-                    top: "65%",
+                    top: "50%",
                 }}>
             </div>
         );
@@ -30,11 +41,16 @@ export default function Wall({ direction = "top" }) {
         return (
             <div
                 style={{
-                    background: "#F5F0E4",
+                    background: "radial-gradient(circle, #EFE8C2 0%, #C5AC6B 50%, #A88E4E 100%)",
+                    boxShadow: `
+                    0 0 40px #C5AC6B,
+                    0 0 20px #BCA25E,
+                    0 0 10px #A88E4E`,
+                    borderRadius: "8px 2px 2px 8px",
                     position: "absolute",
                     height: "20px",
-                    width: "35%",
-                    right: "65%",
+                    width: "45%",
+                    right: "50%",
                 }}>
             </div>
         );
@@ -43,11 +59,16 @@ export default function Wall({ direction = "top" }) {
         return (
             <div
                 style={{
-                    background: "#F5F0E4",
+                    background: "radial-gradient(circle, #EFE8C2 0%, #C5AC6B 50%, #A88E4E 100%)",
+                    boxShadow: `
+                    0 0 40px #C5AC6B,
+                    0 0 20px #BCA25E,
+                    0 0 10px #A88E4E`,
+                    borderRadius: "2px 8px 8px 2px",
                     position: "absolute",
                     height: "20px",
-                    width: "35%",
-                    left: "65%",
+                    width: "45%",
+                    left: "50%",
                 }}>
             </div>
         );
