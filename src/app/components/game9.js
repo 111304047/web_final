@@ -31,7 +31,7 @@ export default function Game9Canvas() {
     statusRef.current = "success";
     setStatusRef.current("success");
     if (user?.username) {
-      const newScore = (user.score || 0) + 10;
+      const newScore = (user.score || 0) + 20;
       try {
         const res = await fetch("/api/auth", {
           method: "PATCH",

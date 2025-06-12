@@ -205,7 +205,7 @@ export default function Game8Canvas() {
     localStorage.setItem("game2Success", "true");
     //setSuccess(true);
 
-    if (coinRef.current >= 300) {
+    if (coinRef.current >= 200) {
       setSuccess(true);
     }
     else {

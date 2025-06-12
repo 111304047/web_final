@@ -107,8 +107,8 @@ function Apple({ isGameActive, onSuccess, onFail }) {
 
     const rand = Math.random();
     console.log("Random value:", rand);
-    const success = rand < 0.5;
-    //雖然我設定50%但他很容易出現永遠都是未中獎的bug，我直接當黑店我沒差（修一輩子沒修好所以放棄）
+    const success = rand < 0.1; // 將中獎機率改為 0.3
+    //雖然我設定30%但他很容易出現永遠都是未中獎的bug，我直接當黑店我沒差（修一輩子沒修好所以放棄）
     if (success) {
       onSuccess(); // 顯示成功，加分
     } else {

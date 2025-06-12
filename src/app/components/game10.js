@@ -107,9 +107,9 @@ export default function Game11Canvas() {
 
   // 定義不同糖餅的移動速度 (毫秒數，數字越小越快)
   const GAME_SPEEDS = {
-    star: 25,
-    tri: 40,
-    umbrella: 15,
+    star: 20,
+    tri: 30,
+    umbrella: 10,
   };
 
   // 擊破點位置
